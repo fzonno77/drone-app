@@ -3,328 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>DJI Mini 5 Pro - Pro Setup v100</title>
-
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚁</text></svg>">
+    <title>DJI Mini 5 Pro - Solar Pro v102</title>
     <style>
-        :root { --bg: #05070b; --card: #161b22; --accent: #deff9a; --text: #f0f6fc; --warn: #ffab70; --target: #38bdf8; --smart: #00f2ff; --action: #c084fc; }
-        html, body { touch-action: manipulation; font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; }
+        :root { --bg: #000000; --card: #121212; --accent: #ffff00; --text: #ffffff; --smart: #00f2ff; --warn: #ffab70; --target: #38bdf8; }
+        html, body { touch-action: manipulation; font-family: "Arial Black", sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; }
         
-        .hero-info { text-align: center; margin: 10px 0 25px 0; padding: 30px 15px; background: linear-gradient(180deg, rgba(222, 255, 154, 0.1) 0%, rgba(5, 7, 11, 0) 100%); border-radius: 32px; border: 1px solid rgba(255,255,255,0.05); }
-        .hero-date { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 4px; color: #8b949e; margin-bottom: 15px; font-weight: 500; }
-        .hero-main { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
-        .hero-weather { font-size: 5.5rem; margin-bottom: 10px; filter: drop-shadow(0 0 25px rgba(222, 255, 154, 0.4)); }
-        .hero-time { font-size: 3.8rem; font-weight: 900; color: var(--text); letter-spacing: -2px; }
+        /* ALTO CONTRASTO SOLAR EDITION */
+        .hero-info { text-align: center; padding: 25px; background: #1a1a1a; border-radius: 25px; border: 2px solid var(--accent); margin-bottom: 20px; }
+        .hero-time { font-size: 3.5rem; font-weight: 900; color: var(--accent); }
 
-        .sensor-panel { background: rgba(0, 242, 255, 0.05); border: 1px solid var(--smart); border-radius: 20px; padding: 15px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .sensor-status { font-size: 0.7rem; color: var(--smart); text-transform: uppercase; font-weight: bold; display: flex; align-items: center; gap: 8px; }
-        .pulse { width: 8px; height: 8px; background: var(--smart); border-radius: 50%; box-shadow: 0 0 8px var(--smart); animation: blink 2s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .sensor-panel { background: #111; border: 2px solid var(--smart); border-radius: 20px; padding: 15px; margin-bottom: 20px; }
+        .sensor-status { font-size: 0.8rem; color: var(--smart); font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
 
-        .screen { display: none; max-width: 500px; margin: 0 auto; animation: fadeIn 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
+        .btn { display: block; width: 100%; padding: 22px; margin: 12px 0; background: var(--card); border: 2px solid #333; border-radius: 18px; color: #fff; font-size: 1.1rem; font-weight: bold; text-align: left; cursor: pointer; }
+        .btn-smart { border: 3px solid var(--smart) !important; background: rgba(0, 242, 255, 0.1) !important; position: relative; }
+        .btn-smart::after { content: "CONSIGLIATO"; position: absolute; top: -10px; right: 10px; background: var(--smart); color: #000; font-size: 0.6rem; padding: 2px 8px; border-radius: 5px; }
+
+        .card { background: #1a1a1a; padding: 20px; border-radius: 20px; margin-top: 15px; border: 2px solid var(--accent); }
+        .val { color: var(--accent); font-weight: 900; font-size: 1.6rem; }
+        .instruction-box { margin-top: 15px; padding: 15px; background: #000; border-radius: 12px; border: 1px solid #444; color: #fff; font-size: 1.1rem; }
+        
+        .screen { display: none; }
         .active { display: block !important; }
-        .nav-header { display: flex; flex-direction: column; margin-bottom: 20px; border-bottom: 1px solid #30363d; position: sticky; top: 0; background: var(--bg); z-index: 100; padding-bottom: 15px; }
-        .nav-top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        .path-display { font-size: 0.75rem; color: var(--target); background: rgba(56, 189, 248, 0.1); padding: 12px 16px; border-radius: 10px; margin-top: 12px; border-left: 4px solid var(--target); min-height: 1.2em; line-height: 1.4; }
-        .nav-btn-circle { width: 48px; height: 48px; border-radius: 50%; background: #21262d; border: 1px solid #30363d; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; }
-        h1 { color: var(--accent); font-size: 1rem; text-transform: uppercase; margin: 0; font-weight: 900; letter-spacing: 1px; }
-        .btn { display: block; width: 100%; padding: 24px; margin: 14px 0; background: var(--card); border: 1px solid #30363d; border-radius: 22px; color: #fff; font-size: 1.1rem; text-align: left; position: relative; box-sizing: border-box; cursor: pointer; transition: transform 0.1s; }
-        .btn-smart { border: 2.5px solid var(--smart) !important; background: rgba(0, 242, 255, 0.05) !important; }
-        .smart-label-container { position: absolute; top: -14px; right: 20px; background: var(--smart); padding: 4px 12px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,242,255,0.5); }
-        .badge-smart-text { color: #000; font-size: 0.7rem; font-weight: 900; }
-
-        .fps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 15px 0; }
-        .btn-fps { padding: 10px; text-align: center; height: 75px; display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 1.4rem; margin: 0; border-radius: 20px; }
-        .card { background: var(--card); padding: 25px; border-radius: 28px; margin-top: 20px; border-left: 8px solid var(--accent); box-shadow: 0 12px 40px rgba(0,0,0,0.6); }
-        .val { color: #ffff00; font-weight: 900; font-family: sans-serif; font-size: 1.6rem; }
-        .instruction-box { margin-top: 18px; padding: 20px; background: #1a1a1a; border-radius: 18px; font-size: 1.2rem; line-height: 1.6; color: #ffffff; border: 2px solid #ffff00; font-weight: bold; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .tara-btn { background: #222; border: 1px dashed var(--accent); color: var(--accent); font-size: 0.7rem; padding: 8px; border-radius: 10px; margin-top: 10px; width: 100%; }
     </style>
 </head>
 <body>
 
 <div class="hero-info">
-    <div id="hero-date" class="hero-date">-- -- ----</div>
-    <div class="hero-main">
-        <div id="hero-weather" class="hero-weather">☀️</div>
-        <div id="hero-time" class="hero-time">00:00</div>
-    </div>
+    <div id="hero-time" class="hero-time">00:00</div>
+    <div id="status-display" style="font-size: 0.9rem; color: #aaa;">PRONTO AL DECOLLO</div>
 </div>
 
 <div id="app" style="max-width: 500px; margin: 0 auto;">
     
     <div class="sensor-panel">
-        <div class="sensor-status"><div class="pulse"></div> <span id="gps-label">GPS PRONTO</span></div>
+        <div class="sensor-status" id="sensor-log">🛰️ SENSORI DISCONNESSI</div>
         <div style="display: flex; gap: 10px;">
-            <button class="btn" onclick="startGPS()" style="margin:0; padding:15px; font-size:0.8rem; flex:1; text-align:center; background: var(--smart); color:#000;">🛰️ LOCALIZZA</button>
-            <label class="btn" style="margin:0; padding:15px; font-size:0.8rem; flex:1; text-align:center; border-color: var(--smart);">
-                📸 ANALISI LUCE
+            <label class="btn" style="margin:0; padding:15px; font-size:0.8rem; flex:2; text-align:center; border-color: var(--smart); background: #000;">
+                📸 ANALISI AMBIENTE
                 <input type="file" accept="image/*" capture="environment" style="display:none" onchange="analyzePhoto(event)">
             </label>
+            <button onclick="calibrateSole()" class="tara-btn" style="flex:1;">TARATURA<br>SOLE</button>
         </div>
     </div>
 
+    <!-- Schermate principali (Mantengo la tua struttura ma con grafica Solar) -->
     <div id="screen-env" class="screen active">
-        <div class="nav-header">
-            <div class="nav-top-row"><h1>1. Ambiente</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
-            <div id="path-display-main" class="path-display">Scegli la condizione di luce o usa i sensori sopra.</div>
-        </div>
-        <button class="btn" id="btn-sole" onclick="setStep('env', 'Sole Forte', 'screen-wb-sole')">☀️ SOLE PIENO / ZENIT</button>
-        <button class="btn" id="btn-alba" onclick="setStep('env', 'Alba/Tramonto', 'screen-wb-alba')">🌅 ALBA / TRAMONTO</button>
-        <button class="btn" id="btn-nuvoloso" onclick="setStep('env', 'Nuvoloso', 'screen-wb-cloud')">☁️ NUVOLOSO / OMBRA</button>
-        <button class="btn" id="btn-notte" onclick="setStep('env', 'Notte', 'screen-wb-night')">🌙 NOTTE / CITTÀ</button>
-    </div>
-
-    <div id="screen-wb-sole" class="screen">
-        <div class="nav-header">
-            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
-            <div class="path-display path-dynamic"></div>
-        </div>
-        <button class="btn" id="wb-5500-s" onclick="setStep('wb', '5500K', 'screen-goal')">☀️ GIORNO STANDARD (5500K)</button>
-        <button class="btn" onclick="setStep('wb', '6000K', 'screen-goal')">☀️ LUCE LEGGERMENTE CALDA (6000K)</button>
-    </div>
-
-    <div id="screen-wb-alba" class="screen">
-        <div class="nav-header">
-            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
-            <div class="path-display path-dynamic"></div>
-        </div>
-        <button class="btn" id="wb-5500-a" onclick="setStep('wb', '5500K', 'screen-goal')">🌅 ESALTA COLORI CALDI (5500K)</button>
-        <button class="btn" onclick="setStep('wb', '3200K', 'screen-goal')">🌅 BILANCIA / NEUTRALIZZA (3200K)</button>
-    </div>
-
-    <div id="screen-wb-cloud" class="screen">
-        <div class="nav-header">
-            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
-            <div class="path-display path-dynamic"></div>
-        </div>
-        <button class="btn" onclick="setStep('wb', '6500K', 'screen-goal')">☁️ OMBRA PROFONDA (6500K)</button>
-        <button class="btn" onclick="setStep('wb', '6000K', 'screen-goal')">⛅ NUVOLOSO (6000K)</button>
-    </div>
-
-    <div id="screen-wb-night" class="screen">
-        <div class="nav-header">
-            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
-            <div class="path-display path-dynamic"></div>
-        </div>
-        <button class="btn" onclick="setStep('wb', '2800K', 'screen-goal')">🟠 LAMPIONI GIALLI (2800K)</button>
-        <button class="btn" onclick="setStep('wb', '4500K', 'screen-goal')">⚪ LUCI LED / MODERNE (4500K)</button>
-        <button class="btn" onclick="setStep('wb', '5000K', 'screen-goal')">🌑 BUIO TOTALE (5000K)</button>
+        <h2 style="color:var(--accent)">1. LUCE ATTUALE</h2>
+        <button class="btn" id="btn-sole" onclick="setStep('env', 'Sole Forte', 'screen-goal')">☀️ SOLE PIENO</button>
+        <button class="btn" id="btn-alba" onclick="setStep('env', 'Alba/Tramonto', 'screen-goal')">🌅 ALBA / TRAMONTO</button>
+        <button class="btn" id="btn-nuvoloso" onclick="setStep('env', 'Nuvoloso', 'screen-goal')">☁️ NUVOLOSO / OMBRA</button>
     </div>
 
     <div id="screen-goal" class="screen">
-        <div class="nav-header">
-            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>3. Stile</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
-            <div class="path-display path-dynamic"></div>
-        </div>
-        <button class="btn" id="goal-cinema" onclick="setStep('goal', 'Cinema', 'screen-fps')">🎬 CINEMA (Motion Blur)</button>
+        <h2 style="color:var(--accent)">2. OBIETTIVO</h2>
+        <button class="btn" id="goal-cinema" onclick="setStep('goal', 'Cinema', 'screen-fps')">🎬 CINEMA (Sfocato)</button>
         <button class="btn" id="goal-sport" onclick="setStep('goal', 'Sport', 'screen-fps')">🏎️ SPORT (Nitido)</button>
     </div>
 
     <div id="screen-fps" class="screen">
-        <div class="nav-header">
-            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>4. FPS</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
-            <div class="path-display path-dynamic"></div>
+        <h2 style="color:var(--accent)">3. FRAME RATE</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <button class="btn" style="text-align:center" onclick="setStep('fps', '24', 'screen-res')">24</button>
+            <button class="btn" style="text-align:center" onclick="setStep('fps', '25', 'screen-res')">25</button>
+            <button class="btn" style="text-align:center" onclick="setStep('fps', '30', 'screen-res')">30</button>
         </div>
-        <div class="fps-grid">
-            <button class="btn btn-fps" id="fps-24" onclick="setStep('fps', '24', 'screen-iso')">24</button>
-            <button class="btn btn-fps" id="fps-25" onclick="setStep('fps', '25', 'screen-iso')">25</button>
-            <button class="btn btn-fps" id="fps-30" onclick="setStep('fps', '30', 'screen-iso')">30</button>
-            <button class="btn btn-fps" id="fps-50" onclick="setStep('fps', '50', 'screen-iso')">50</button>
-            <button class="btn btn-fps" id="fps-60" onclick="setStep('fps', '60', 'screen-iso')">60</button>
-        </div>
-    </div>
-
-    <div id="screen-iso" class="screen">
-        <div class="nav-header">
-            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>5. Gestione ISO</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
-            <div class="path-display path-dynamic"></div>
-        </div>
-        <button class="btn" id="iso-manual" onclick="setStep('iso', 'ISO Manuale', 'screen-res')">🔧 ISO MANUALE</button>
-        <button class="btn" id="iso-auto" onclick="setStep('iso', 'ISO Automatico', 'screen-res')">🤖 ISO AUTOMATICA</button>
     </div>
 
     <div id="screen-res" class="screen">
-        <div class="nav-header">
-            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>Setup Finale</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
-            <div class="path-display path-dynamic"></div>
-        </div>
         <div id="result"></div>
-        <button class="btn" style="background: var(--accent); color: #000; text-align: center; font-weight: 900; margin-top: 30px;" onclick="resetApp()">🔄 NUOVO DECOLLO</button>
+        <button class="btn" style="background: var(--accent); color: #000; text-align: center;" onclick="location.reload()">🔄 NUOVA ANALISI</button>
     </div>
 </div>
 
-<canvas id="photo-canvas" style="display:none;"></canvas>
+<canvas id="calc" style="display:none;"></canvas>
 
 <script>
-    let state = {};
-    let historyStack = [{id: 'screen-env', state: {}}];
-    let photoLux = 0;
+    let state = { soleRef: localStorage.getItem('soleRef') || 100 };
+    let lastBrightness = 0;
+    let lastWB = "5500K";
 
-    function startGPS() {
-        document.getElementById('gps-label').innerText = "RICERCA SATELLITI...";
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    document.getElementById('gps-label').innerText = "POSIZIONE ACQUISITA (OK)";
-                    updateSmart();
-                },
-                (err) => { document.getElementById('gps-label').innerText = "GPS DISATTIVATO"; },
-                { enableHighAccuracy: true }
-            );
-        }
+    function updateTime() {
+        document.getElementById('hero-time').innerText = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
     }
+    setInterval(updateTime, 1000); updateTime();
 
     function analyzePhoto(event) {
         const file = event.target.files[0];
-        if (!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
             const img = new Image();
             img.onload = () => {
-                const canvas = document.getElementById('photo-canvas');
+                const canvas = document.getElementById('calc');
                 const ctx = canvas.getContext('2d');
                 canvas.width = 10; canvas.height = 10;
                 ctx.drawImage(img, 0, 0, 10, 10);
                 const data = ctx.getImageData(0,0,10,10).data;
-                let brightness = 0;
-                for(let i=0; i<data.length; i+=4) brightness += (data[i]+data[i+1]+data[i+2])/3;
-                photoLux = brightness / (data.length/4);
-                document.getElementById('gps-label').innerText = "LUCE ANALIZZATA: " + Math.round(photoLux);
-                updateSmart();
+                
+                let r=0, g=0, b=0;
+                for(let i=0; i<data.length; i+=4) { r+=data[i]; g+=data[i+1]; b+=data[i+2]; }
+                
+                lastBrightness = (r+g+b) / (data.length / 4 * 3);
+                let ratio = (r/ (data.length/4)) / (b/ (data.length/4));
+                
+                // ANALISI COLORE (WB)
+                if(ratio > 1.25) lastWB = "3500K - 4500K (Caldo)";
+                else if(ratio < 0.85) lastWB = "6500K - 7500K (Freddo)";
+                else lastWB = "5500K (Neutro)";
+
+                document.getElementById('sensor-log').innerHTML = `💡 LUX: ${Math.round(lastBrightness)} | WB: ${lastWB}`;
+                autoSelect();
             };
             img.src = e.target.result;
         };
         reader.readAsDataURL(file);
     }
 
-    function updateHero() {
-        const now = new Date();
-        document.getElementById('hero-date').innerText = now.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase();
-        document.getElementById('hero-time').innerText = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-        const h = now.getHours();
-        const icon = document.getElementById('hero-weather');
-        if (h >= 20 || h < 6) icon.innerText = "🌙";
-        else if (h >= 6 && h < 10) icon.innerText = "🌅";
-        else if (h >= 18 && h < 20) icon.innerText = "🌇";
-        else icon.innerText = "☀️";
-    }
-    setInterval(updateHero, 1000); updateHero();
-
-    function applySmart(id) {
-        const el = document.getElementById(id);
-        if (el && !el.querySelector('.smart-label-container')) {
-            el.classList.add('btn-smart');
-            const b = document.createElement('div');
-            b.className = 'smart-label-container';
-            b.innerHTML = '<span class="badge-smart-text">SMART</span>';
-            el.appendChild(b);
+    function calibrateSole() {
+        if(lastBrightness > 10) {
+            localStorage.setItem('soleRef', lastBrightness);
+            state.soleRef = lastBrightness;
+            alert("TARATURA OK! Sole impostato a: " + Math.round(lastBrightness));
+        } else {
+            alert("Foto troppo scura per tarare il sole!");
         }
     }
 
-    function updateSmart() {
-        const h = new Date().getHours();
-        document.querySelectorAll('.btn-smart').forEach(x => x.classList.remove('btn-smart'));
-        document.querySelectorAll('.smart-label-container').forEach(x => x.remove());
-
-        if (!state.env) {
-            if (photoLux > 0) {
-                if (photoLux > 180) applySmart('btn-sole');
-                else if (photoLux > 70) applySmart('btn-nuvoloso');
-                else if (photoLux < 30) applySmart('btn-notte');
-                else applySmart('btn-alba');
-            } else {
-                if (h >= 20 || h < 6) applySmart('btn-notte');
-                else if (h < 10 || h > 17) applySmart('btn-alba');
-                else applySmart('btn-sole');
-            }
-        }
-        if (state.env === 'Sole Forte') applySmart('wb-5500-s');
-        if (state.env === 'Alba/Tramonto') applySmart('wb-5500-a');
-        if (state.goal === 'Cinema') { applySmart('fps-24'); applySmart('fps-25'); }
-        applySmart('iso-manual');
+    function autoSelect() {
+        document.querySelectorAll('.btn-smart').forEach(b => b.classList.remove('btn-smart'));
+        let ref = state.soleRef;
+        
+        if(lastBrightness > ref * 0.8) applySmart('btn-sole');
+        else if(lastBrightness > ref * 0.3) applySmart('btn-nuvoloso');
+        else applySmart('btn-alba');
     }
 
-    function setStep(k, v, nextId) {
+    function applySmart(id) { document.getElementById(id).classList.add('btn-smart'); }
+
+    function setStep(k, v, next) {
         state[k] = v;
-        historyStack.push({id: nextId, state: JSON.parse(JSON.stringify(state))});
-        showScreen(nextId);
-        updatePath();
-        updateSmart();
-        if (nextId === 'screen-res') render();
-    }
-
-    function goBack() {
-        if (historyStack.length > 1) {
-            historyStack.pop();
-            const last = historyStack[historyStack.length - 1];
-            state = JSON.parse(JSON.stringify(last.state));
-            showScreen(last.id);
-            updatePath();
-            updateSmart();
-        }
-    }
-
-    function resetApp() { state = {}; historyStack = [{id: 'screen-env', state: {}}]; showScreen('screen-env'); updatePath(); updateSmart(); photoLux = 0; }
-
-    function showScreen(id) { 
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        window.scrollTo(0,0);
-    }
-
-    function updatePath() {
-        let p = []; 
-        if (state.env) p.push(state.env); 
-        if (state.wb) p.push(state.wb); 
-        if (state.goal) p.push(state.goal); 
-        if (state.fps) p.push(state.fps + "fps");
-        if (state.iso) p.push(state.iso);
-        document.querySelectorAll('.path-dynamic').forEach(el => el.innerHTML = p.join(" ➔ ") || "Pronto al volo...");
-        const mainPath = document.getElementById('path-display-main');
-        if(mainPath) mainPath.innerHTML = p.join(" ➔ ") || "Scegli la condizione di luce attuale.";
+        document.getElementById(next).classList.add('active');
+        if(next === 'screen-res') render();
     }
 
     function render() {
         let nd = "ND32";
-        let baseLux = photoLux > 0 ? photoLux : (state.env === 'Sole Forte' ? 200 : 50);
-
-        if (state.env === 'Sole Forte' || baseLux > 180) nd = (state.goal === 'Cinema') ? "ND128" : "ND64";
-        else if (state.env === 'Alba/Tramonto') nd = "ND32";
-        else if (state.env === 'Nuvoloso') nd = "ND16";
-        else if (state.env === 'Notte') nd = "NESSUNO";
-
-        const luxFeedback = photoLux > 0 ? `<div style="font-size:0.75rem; color:var(--smart); margin-bottom:12px; font-weight:bold; letter-spacing:1px;">📊 ANALISI LUCE: ${Math.round(photoLux)} LUX</div>` : '';
-        const ott = (state.goal === 'Cinema') ? `1/${state.fps * 2}s` : `FLUIDO (>1/${state.fps * 4}s)`;
-
+        if(state.env === 'Sole Forte') nd = (state.goal === 'Cinema') ? "ND64/128" : "ND32/64";
+        
         document.getElementById('result').innerHTML = `
-            ${luxFeedback}
-            <div class="card"><span class="card-title">Hardware</span>💎 FILTRO: <span class="val">${nd}</span></div>
-            <div class="card" style="border-left-color: var(--action)">
-                <span class="card-title">Camera Setting</span>
-                FPS: <span class="val">${state.fps}</span> | WB: <span class="val">${state.wb}</span><br>
-                OTTURATORE: <span class="val">${ott}</span>
+            <div class="card">
+                <span style="font-size:0.7rem; color:var(--smart)">HARDWARE</span><br>
+                💎 FILTRO: <span class="val">${nd}</span>
             </div>
-            <div class="card" style="border-left-color: var(--warn)">
-                <span class="card-title">Esposizione (${state.iso})</span>
-                ${state.iso === 'ISO Manuale' ? 
-                    `ISO: <span class="val">100</span>
-                    <div class="instruction-box">
-                        • <b>ISO MANUALE</b><br>
-                        • <b>MM > +0.3</b>: Monta ND più alto.<br>
-                        • <b>MM < -0.3</b>: Monta ND più basso o aumenta ISO.<br>
-                        • <span style="color:#52ffad;">Target: MM tra -0.3 e 0.0</span>
-                    </div>` : 
-                    `<div class="instruction-box"><b>ISO AUTO</b> (Max 200) | <b>EV: -0.3</b></div>`}
+            <div class="card">
+                <span style="font-size:0.7rem; color:var(--smart)">CAMERA SETTING</span><br>
+                WB: <span class="val">${lastWB}</span><br>
+                OTTURATORE: <span class="val">1/${state.fps * 2}s</span>
             </div>
-            <div class="card" style="border-left-color: var(--target); background: rgba(56, 189, 248, 0.05);">
-                <span class="card-title">Fondamentale</span>
-                <b>🔒 BLOCCO AE:</b>
-                <div class="instruction-box">Inquadra l'area di luce principale e tieni premuto sul display per bloccare l'esposizione.</div>
+            <div class="instruction-box">
+                <b>INFO VOLO:</b><br>
+                Esposizione Target: <b>MM -0.3</b><br>
+                Se MM è positivo, aumenta ND.<br>
+                Se MM è negativo, aumenta ISO.
             </div>
         `;
     }
-    updateSmart();
 </script>
 </body>
 </html>
