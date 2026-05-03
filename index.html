@@ -61,7 +61,7 @@
             <button class="btn" onclick="startGPS()" style="margin:0; padding:15px; font-size:0.8rem; flex:1; text-align:center; background: var(--smart); color:#000;">🛰️ LOCALIZZA</button>
             <label class="btn" style="margin:0; padding:15px; font-size:0.8rem; flex:1; text-align:center; border-color: var(--smart);">
                 📸 ANALISI AMBIENTE
-                <input type="file" accept="image/*" capture="environment" style="display:none" onchange="analyzePhoto(event)">
+                <input id="input-foto" type="file" accept="image/*" capture="environment" style="display:none" onchange="analyzePhoto(event)">
             </label>
             <button class="btn-tara" style="width:100%" onclick="calibrateSole()">🎯 TARATURA SOLE (Imposta riferimento attuale)</button>
         </div>
@@ -229,7 +229,6 @@
                 }
                 photoLux = brightness / (data.length/4);
                 let ratio = (rTotal / bTotal);
-                // BUG FIX: Aggiornamento immediato del tono colore globale[cite: 3]
                 colorTone = ratio > 1.25 ? "warm" : (ratio < 0.85 ? "cold" : "neutral");
                 sunElevation = calculateSunElevation();
                 document.getElementById('gps-label').innerText = `LUX: ${Math.round(photoLux)} | ELEV: ${Math.round(sunElevation)}° | ${colorTone.toUpperCase()}`;
@@ -290,12 +289,10 @@
             }
         }
         
-        // WB SMART LOGIC[cite: 3]
         if (state.env === 'Sole Forte') applySmart(colorTone === "warm" ? 'wb-6000-s' : 'wb-5500-s');
         if (state.env === 'Alba/Tramonto') applySmart(colorTone === "warm" ? 'wb-5500-a' : 'wb-3200-a');
         if (state.env === 'Nuvoloso') applySmart(colorTone === "cold" ? 'wb-6500-c' : 'wb-6000-c');
         
-        // CORREZIONE LOGICA NOTTURNA: Assicuriamo che se colorTone è WARM, selezioni 2800K[cite: 3]
         if (state.env === 'Notte') {
             if (colorTone === "warm") applySmart('wb-2800-n');
             else if (colorTone === "neutral") applySmart('wb-4500-n');
@@ -325,13 +322,27 @@
         }
     }
 
+    // NUOVO RESET TOTALE INTEGRATO[cite: 3, 4]
     function resetApp() { 
         let currentRef = state.soleRef;
         let currentLat = state.lat;
         let currentLon = state.lon;
-        // BUG FIX: Non resettare a "neutral" se una foto è stata appena analizzata[cite: 3, 4]
+        
+        // Reset Variabili Fisiche e Globali
+        photoLux = 0; 
+        colorTone = "neutral";
         state = { soleRef: currentRef, lat: currentLat, lon: currentLon }; 
+        
+        // Reset navigazione
         historyStack = [{id: 'screen-env', state: state}]; 
+        
+        // Pulizia Input file per nuova analisi
+        const input = document.getElementById('input-foto');
+        if(input) input.value = "";
+        
+        // Reset label UI
+        document.getElementById('gps-label').innerText = "GPS PRONTO";
+        
         showScreen('screen-env'); 
         updatePath(); 
         updateSmart(); 
