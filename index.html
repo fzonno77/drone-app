@@ -162,14 +162,7 @@
 
 <script>
     // STATO INIZIALE E FISICA
-    let state = { 
-        soleRef: parseFloat(localStorage.getItem('soleRef')) || 180, 
-        lastCalDate: localStorage.getItem('lastCalDate') || null,
-        lastCalLat: parseFloat(localStorage.getItem('lastCalLat')) || 0,
-        lastCalLon: parseFloat(localStorage.getItem('lastCalLon')) || 0,
-        lat: 41.11, 
-        lon: 16.87 
-    };
+    let state = { soleRef: parseFloat(localStorage.getItem('soleRef')) || 180, lat: 41.11, lon: 16.87 };
     let historyStack = [{id: 'screen-env', state: {}}];
     let photoLux = 0;
     let colorTone = "neutral";
@@ -189,31 +182,6 @@
         return Math.asin(sinAlt) * (180/Math.PI);
     }
 
-    function checkCalibrationNeed() {
-        const now = new Date();
-        const h = now.getHours();
-        
-        if (h >= 12 && h < 14) {
-            let reason = "";
-            if (state.lastCalDate) {
-                const lastDate = new Date(state.lastCalDate);
-                const diffDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
-                if (diffDays > 30) reason = "L'ultima taratura è più vecchia di 30 giorni.";
-            } else {
-                reason = "Nessuna taratura registrata.";
-            }
-
-            const dist = Math.sqrt(Math.pow(state.lat - state.lastCalLat, 2) + Math.pow(state.lon - state.lastCalLon, 2));
-            if (dist > 0.5) reason = "Ti sei spostato molto dall'ultima taratura.";
-
-            if (reason) {
-                if (confirm(reason + "\n\nSei nella fascia oraria ideale (12:00-14:00).\nVuoi effettuare una nuova taratura del Sole adesso?")) {
-                    alert("Punta il drone verso la luce più forte e premi il tasto TARATURA SOLE.");
-                }
-            }
-        }
-    }
-
     function startGPS() {
         document.getElementById('gps-label').innerText = "RICERCA SATELLITI...";
         if (navigator.geolocation) {
@@ -224,7 +192,6 @@
                     sunElevation = calculateSunElevation();
                     document.getElementById('gps-label').innerText = `GPS OK | ELEVAZIONE: ${Math.round(sunElevation)}°`;
                     updateSmart();
-                    checkCalibrationNeed();
                 },
                 (err) => { document.getElementById('gps-label').innerText = "GPS DISATTIVATO"; },
                 { enableHighAccuracy: true }
@@ -234,18 +201,9 @@
 
     function calibrateSole() {
         if(photoLux > 10) {
-            const now = new Date();
-            state.soleRef = photoLux;
-            state.lastCalDate = now.toISOString();
-            state.lastCalLat = state.lat;
-            state.lastCalLon = state.lon;
-
             localStorage.setItem('soleRef', photoLux);
-            localStorage.setItem('lastCalDate', state.lastCalDate);
-            localStorage.setItem('lastCalLat', state.lastCalLat);
-            localStorage.setItem('lastCalLon', state.lastCalLon);
-
-            alert("🎯 TARATURA FISICA OK!\nData: " + now.toLocaleDateString() + "\nRiferimento Sole: " + Math.round(photoLux));
+            state.soleRef = photoLux;
+            alert("TARATURA FISICA OK! Riferimento Sole: " + Math.round(photoLux));
             updateSmart();
         } else {
             alert("Analizza prima una foto in piena luce!");
@@ -314,11 +272,11 @@
 
         if (!state.env) {
             if (photoLux > 0) {
-                if (sunElevation > 15) { 
+                if (sunElevation > 15) {
                     if (photoLux > ref * 0.7) applySmart('btn-sole');
                     else if (photoLux > ref * 0.2) applySmart('btn-nuvoloso');
                     else document.getElementById('gps-label').innerText += " (RILEVATO INTERNO?)";
-                } else if (sunElevation > -6) { 
+                } else if (sunElevation > -6) {
                     applySmart('btn-alba');
                 } else {
                     applySmart('btn-notte');
@@ -331,9 +289,15 @@
             }
         }
         
+        // WB SMART LOGIC[cite: 3]
         if (state.env === 'Sole Forte') applySmart(colorTone === "warm" ? 'wb-6000-s' : 'wb-5500-s');
         if (state.env === 'Alba/Tramonto') applySmart(colorTone === "warm" ? 'wb-5500-a' : 'wb-3200-a');
         if (state.env === 'Nuvoloso') applySmart(colorTone === "cold" ? 'wb-6500-c' : 'wb-6000-c');
+        if (state.env === 'Notte') {
+            if (colorTone === "warm") applySmart('wb-2800-n');
+            else if (colorTone === "neutral") applySmart('wb-4500-n');
+            else applySmart('wb-5000-n');
+        }
 
         if (state.goal === 'Cinema') { applySmart('fps-24'); applySmart('fps-25'); }
         applySmart('iso-manual');
@@ -360,17 +324,7 @@
 
     function resetApp() { 
         let currentRef = state.soleRef;
-        let lastD = state.lastCalDate;
-        let lastLat = state.lastCalLat;
-        let lastLon = state.lastCalLon;
-        state = { 
-            soleRef: currentRef, 
-            lastCalDate: lastD,
-            lastCalLat: lastLat,
-            lastCalLon: lastLon,
-            lat: state.lat, 
-            lon: state.lon 
-        }; 
+        state = { soleRef: currentRef, lat: state.lat, lon: state.lon }; 
         historyStack = [{id: 'screen-env', state: state}]; 
         showScreen('screen-env'); 
         updatePath(); 
@@ -401,8 +355,7 @@
         else if (state.env === 'Nuvoloso') nd = "ND16";
         else if (state.env === 'Notte') nd = "NESSUNO";
 
-        const calDisplay = state.lastCalDate ? new Date(state.lastCalDate).toLocaleDateString() : "Mai effettuata";
-        const luxFeedback = `<div style="font-size:0.75rem; color:var(--smart); margin-bottom:12px; font-weight:bold; letter-spacing:1px;">📊 ANALISI: ${Math.round(photoLux)} LUX | SOLE: ${Math.round(sunElevation)}° | TARATURA: ${calDisplay}</div>`;
+        const luxFeedback = `<div style="font-size:0.75rem; color:var(--smart); margin-bottom:12px; font-weight:bold; letter-spacing:1px;">📊 ANALISI FISICA: ${Math.round(photoLux)} LUX | SOLE: ${Math.round(sunElevation)}°</div>`;
         const ott = (state.goal === 'Cinema') ? `1/${state.fps * 2}s` : `FLUIDO (>1/${state.fps * 4}s)`;
 
         document.getElementById('result').innerHTML = `
