@@ -61,7 +61,7 @@
             <button class="btn" onclick="startGPS()" style="margin:0; padding:15px; font-size:0.8rem; flex:1; text-align:center; background: var(--smart); color:#000;">🛰️ LOCALIZZA</button>
             <label class="btn" style="margin:0; padding:15px; font-size:0.8rem; flex:1; text-align:center; border-color: var(--smart);">
                 📸 ANALISI AMBIENTE
-                <input type="file" accept="image/*" capture="environment" style="display:none" onchange="analyzePhoto(event)">
+                <input id="input-foto" type="file" accept="image/*" capture="environment" style="display:none" onchange="analyzePhoto(event)">
             </label>
             <button class="btn-tara" style="width:100%" onclick="calibrateSole()">🎯 TARATURA SOLE (Imposta riferimento attuale)</button>
         </div>
@@ -73,12 +73,13 @@
             <div id="path-display-main" class="path-display">Scegli la condizione di luce o usa i sensori sopra.</div>
         </div>
         <button class="btn" id="btn-sole" onclick="setStep('env', 'Sole Forte', 'screen-wb-sole')">☀️ SOLE PIENO / ZENIT</button>
+        <!-- NUOVA CATEGORIA: LUCE DI TAGLIO[cite: 3] -->
+        <button class="btn" id="btn-taglio" onclick="setStep('env', 'Luce di Taglio', 'screen-wb-sole')">📐 MATTINA / POMERIGGIO</button>
         <button class="btn" id="btn-alba" onclick="setStep('env', 'Alba/Tramonto', 'screen-wb-alba')">🌅 ALBA / TRAMONTO</button>
         <button class="btn" id="btn-nuvoloso" onclick="setStep('env', 'Nuvoloso', 'screen-wb-cloud')">☁️ NUVOLOSO / OMBRA</button>
         <button class="btn" id="btn-notte" onclick="setStep('env', 'Notte', 'screen-wb-night')">🌙 NOTTE / CITTÀ</button>
     </div>
 
-    <!-- Schermate WB -->
     <div id="screen-wb-sole" class="screen">
         <div class="nav-header">
             <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -161,14 +162,12 @@
 <canvas id="photo-canvas" style="display:none;"></canvas>
 
 <script>
-    // STATO INIZIALE E FISICA
     let state = { soleRef: parseFloat(localStorage.getItem('soleRef')) || 180, lat: 41.11, lon: 16.87 };
     let historyStack = [{id: 'screen-env', state: {}}];
     let photoLux = 0;
     let colorTone = "neutral";
     let sunElevation = 0;
 
-    // --- ALGORITMO ASTRONOMICO ---
     function calculateSunElevation() {
         const now = new Date();
         const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
@@ -229,7 +228,6 @@
                 }
                 photoLux = brightness / (data.length/4);
                 let ratio = (rTotal / bTotal);
-                // BUG FIX: Aggiornamento immediato del tono colore globale[cite: 3]
                 colorTone = ratio > 1.25 ? "warm" : (ratio < 0.85 ? "cold" : "neutral");
                 sunElevation = calculateSunElevation();
                 document.getElementById('gps-label').innerText = `LUX: ${Math.round(photoLux)} | ELEV: ${Math.round(sunElevation)}° | ${colorTone.toUpperCase()}`;
@@ -273,29 +271,29 @@
 
         if (!state.env) {
             if (photoLux > 0) {
-                if (sunElevation > 15) {
+                // LOGICA ASTRO-FOTOGRAFICA AGGIORNATA[cite: 3]
+                if (sunElevation > 35) {
                     if (photoLux > ref * 0.7) applySmart('btn-sole');
-                    else if (photoLux > ref * 0.2) applySmart('btn-nuvoloso');
-                    else document.getElementById('gps-label').innerText += " (RILEVATO INTERNO?)";
+                    else applySmart('btn-nuvoloso');
+                } else if (sunElevation > 12) {
+                    applySmart('btn-taglio'); // Suggerimento per Luce di Taglio[cite: 3]
                 } else if (sunElevation > -6) {
                     applySmart('btn-alba');
                 } else {
                     applySmart('btn-notte');
                 }
             } else {
-                const h = new Date().getHours();
-                if (h >= 20 || h < 6) applySmart('btn-notte');
-                else if (h < 10 || h > 17) applySmart('btn-alba');
-                else applySmart('btn-sole');
+                if (sunElevation > 35) applySmart('btn-sole');
+                else if (sunElevation > 12) applySmart('btn-taglio');
+                else if (sunElevation > -6) applySmart('btn-alba');
+                else applySmart('btn-notte');
             }
         }
         
-        // WB SMART LOGIC[cite: 3]
-        if (state.env === 'Sole Forte') applySmart(colorTone === "warm" ? 'wb-6000-s' : 'wb-5500-s');
+        if (state.env === 'Sole Forte' || state.env === 'Luce di Taglio') applySmart(colorTone === "warm" ? 'wb-6000-s' : 'wb-5500-s');
         if (state.env === 'Alba/Tramonto') applySmart(colorTone === "warm" ? 'wb-5500-a' : 'wb-3200-a');
         if (state.env === 'Nuvoloso') applySmart(colorTone === "cold" ? 'wb-6500-c' : 'wb-6000-c');
         
-        // CORREZIONE LOGICA NOTTURNA: Assicuriamo che se colorTone è WARM, selezioni 2800K[cite: 3]
         if (state.env === 'Notte') {
             if (colorTone === "warm") applySmart('wb-2800-n');
             else if (colorTone === "neutral") applySmart('wb-4500-n');
@@ -325,13 +323,25 @@
         }
     }
 
+    // RESET TOTALE PROFONDO[cite: 3]
     function resetApp() { 
         let currentRef = state.soleRef;
         let currentLat = state.lat;
         let currentLon = state.lon;
-        // BUG FIX: Non resettare a "neutral" se una foto è stata appena analizzata[cite: 3, 4]
+        
+        // Pulizia variabili fisiche
+        photoLux = 0;
+        colorTone = "neutral";
+        
+        // Reset stato navigazione
         state = { soleRef: currentRef, lat: currentLat, lon: currentLon }; 
         historyStack = [{id: 'screen-env', state: state}]; 
+        
+        // Reset UI e Input
+        const input = document.getElementById('input-foto');
+        if(input) input.value = "";
+        document.getElementById('gps-label').innerText = "GPS PRONTO";
+        
         showScreen('screen-env'); 
         updatePath(); 
         updateSmart(); 
@@ -356,8 +366,9 @@
         let baseLux = photoLux > 0 ? photoLux : (state.env === 'Sole Forte' ? ref : ref/4);
 
         if (state.env === 'Sole Forte' || baseLux > ref * 0.75) nd = (state.goal === 'Cinema') ? "ND128" : "ND64";
-        else if (state.env === 'Alba/Tramonto') nd = "ND32";
-        else if (state.env === 'Nuvoloso') nd = "ND16";
+        else if (state.env === 'Luce di Taglio') nd = "ND32"; // Filtro ottimizzato per Luce di Taglio[cite: 3]
+        else if (state.env === 'Alba/Tramonto') nd = "ND16";
+        else if (state.env === 'Nuvoloso') nd = "ND8";
         else if (state.env === 'Notte') nd = "NESSUNO";
 
         const luxFeedback = `<div style="font-size:0.75rem; color:var(--smart); margin-bottom:12px; font-weight:bold; letter-spacing:1px;">📊 ANALISI FISICA: ${Math.round(photoLux)} LUX | SOLE: ${Math.round(sunElevation)}°</div>`;
@@ -377,8 +388,8 @@
                     `ISO: <span class="val">100</span>
                     <div class="instruction-box">
                         • <b>ISO MANUALE</b><br>
-                        • <b>MM>+0.3(sovraesposizione)</b>: Monta ND più alto. In caso di necessita' di oscurire ancora aumentare gli fps rispettando la regola dei 180 gradi.<br>
-                        • <b>MM<-0.3(sottoesposizione)</b>: Monta ND più basso o aumenta ISO.<br>
+                        • <b>MM > +0.3</b>: Monta ND più alto o aumenta leggermente FPS.<br>
+                        • <b>MM < -0.3</b>: Monta ND più basso o aumenta ISO.<br>
                         • <span style="color:#52ffad;">Target: MM tra -0.3 e 0.0</span>
                     </div>` : 
                     `<div class="instruction-box"><b>ISO AUTO</b> (Max 200) | <b>EV: -0.3</b></div>`}
@@ -386,7 +397,7 @@
             <div class="card" style="border-left-color: var(--target); background: rgba(56, 189, 248, 0.05);">
                 <span class="card-title">Fondamentale</span>
                 <b>🔒 BLOCCO AE:</b>
-                <div class="instruction-box">Porta il Drone in quota ed individua l'area di maggiore esposizione. Con il dito tocca e tieni premuto questa zona fino a far uscire il lucchetto che indica il blocco dell'esposizione.</div>
+                <div class="instruction-box">Punta l'area più chiara della scena e blocca l'esposizione (lucchetto) per evitare sfarfallii.</div>
             </div>
         `;
     }
