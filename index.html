@@ -25,6 +25,7 @@
         .nav-btn-circle { width: 48px; height: 48px; border-radius: 50%; background: #21262d; border: 1px solid #30363d; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; }
         h1 { color: var(--accent); font-size: 1rem; text-transform: uppercase; margin: 0; font-weight: 900; letter-spacing: 1px; }
         .btn { display: block; width: 100%; padding: 24px; margin: 14px 0; background: var(--card); border: 1px solid #30363d; border-radius: 22px; color: #fff; font-size: 1.1rem; text-align: left; position: relative; box-sizing: border-box; cursor: pointer; transition: transform 0.1s; }
+        .btn:active { transform: scale(0.98); }
         .btn-smart { border: 2.5px solid var(--smart) !important; background: rgba(0, 242, 255, 0.05) !important; }
         .smart-label-container { position: absolute; top: -14px; right: 20px; background: var(--smart); padding: 4px 12px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,242,255,0.5); }
         .badge-smart-text { color: #000; font-size: 0.7rem; font-weight: 900; }
@@ -35,14 +36,18 @@
         .val { color: #ffff00; font-weight: 900; font-family: sans-serif; font-size: 1.6rem; }
         .instruction-box { margin-top: 18px; padding: 20px; background: #1a1a1a; border-radius: 18px; font-size: 1.2rem; line-height: 1.6; color: #ffffff; border: 2px solid #ffff00; font-weight: bold; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .btn-tara { background: transparent; border: 1px dashed var(--accent); color: var(--accent); font-size: 0.6rem; padding: 5px; border-radius: 8px; cursor: pointer; margin-top: 5px; text-transform: uppercase; }
         .manual-box { width: 100%; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 12px; border: 1px solid rgba(0,242,255,0.2); margin-top: 5px; box-sizing: border-box; }
         .manual-input-row { display: flex; gap: 8px; margin-top: 8px; }
         .manual-input-row input { flex: 2; background: #000; border: 1px solid var(--smart); color: #fff; padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; }
         .manual-input-row button { flex: 1; background: var(--smart); border: none; color: #000; border-radius: 8px; font-weight: 900; font-size: 0.7rem; cursor: pointer; }
-        /* Stili per la Preview */
-        .preview-box { width: 100%; height: 160px; border-radius: 18px; overflow: hidden; background: #000; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); position: relative; display: flex; align-items: center; justify-content: center; }
-        #preview-img-final { width: 100%; height: 100%; object-fit: cover; transition: filter 0.5s ease; }
+
+        /* Console Preview */
+        .preview-box { width: 100%; height: 180px; border-radius: 18px; overflow: hidden; background: #000; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        #preview-img-final { width: 100%; height: 100%; object-fit: cover; transition: filter 0.4s; }
+        .console-row { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 12px 0; scrollbar-width: none; }
+        .console-row::-webkit-scrollbar { display: none; }
+        .console-btn { flex-shrink: 0; background: #21262d; border: 1px solid #30363d; color: #fff; padding: 8px 12px; border-radius: 10px; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
+        .active-opt { border-color: var(--smart); background: rgba(0, 242, 255, 0.1); color: var(--smart); }
     </style>
 </head>
 <body>
@@ -75,7 +80,6 @@
                 </div>
                 <button onclick="applySuggestedLux()" style="width: 100%; margin-top: 8px; background: transparent; border: 1px dashed var(--accent); color: var(--accent); padding: 6px; border-radius: 6px; font-size: 0.6rem; cursor: pointer;">APPLICA VALORE CONSIGLIATO</button>
             </div>
-            <button class="btn-tara" style="width:100%" onclick="calibrateSole()">🎯 TARATURA DA FOTO (Imposta riferimento attuale)</button>
         </div>
     </div>
 
@@ -99,6 +103,7 @@
         <button class="btn" id="wb-5500-s" onclick="setStep('wb', '5500K', 'screen-goal')">☀️ GIORNO STANDARD (5500K)</button>
         <button class="btn" id="wb-6000-s" onclick="setStep('wb', '6000K', 'screen-goal')">☀️ LUCE LEGGERMENTE CALDA (6000K)</button>
     </div>
+
     <div id="screen-wb-alba" class="screen">
         <div class="nav-header">
             <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -107,6 +112,7 @@
         <button class="btn" id="wb-5500-a" onclick="setStep('wb', '5500K', 'screen-goal')">🌅 ESALTA COLORI CALDI (5500K)</button>
         <button class="btn" id="wb-3200-a" onclick="setStep('wb', '3200K', 'screen-goal')">🌅 BILANCIA / NEUTRALIZZA (3200K)</button>
     </div>
+
     <div id="screen-wb-cloud" class="screen">
         <div class="nav-header">
             <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -115,6 +121,7 @@
         <button class="btn" id="wb-6500-c" onclick="setStep('wb', '6500K', 'screen-goal')">☁️ OMBRA PROFONDA (6500K)</button>
         <button class="btn" id="wb-6000-c" onclick="setStep('wb', '6000K', 'screen-goal')">⛅ NUVOLOSO (6000K)</button>
     </div>
+
     <div id="screen-wb-night" class="screen">
         <div class="nav-header">
             <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -122,7 +129,6 @@
         </div>
         <button class="btn" id="wb-2800-n" onclick="setStep('wb', '2800K', 'screen-goal')">🟠 LAMPIONI GIALLI (2800K)</button>
         <button class="btn" id="wb-4500-n" onclick="setStep('wb', '4500K', 'screen-goal')">⚪ LUCI LED / MODERNE (4500K)</button>
-        <button class="btn" id="wb-5000-n" onclick="setStep('wb', '5000K', 'screen-goal')">🌑 BUIO TOTALE (5000K)</button>
     </div>
 
     <div id="screen-goal" class="screen">
@@ -133,6 +139,7 @@
         <button class="btn" id="goal-cinema" onclick="setStep('goal', 'Cinema', 'screen-fps')">🎬 CINEMA (Motion Blur)</button>
         <button class="btn" id="goal-sport" onclick="setStep('goal', 'Sport', 'screen-fps')">🏎️ SPORT (Nitido)</button>
     </div>
+
     <div id="screen-fps" class="screen">
         <div class="nav-header">
             <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>4. FPS</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -146,6 +153,7 @@
             <button class="btn btn-fps" id="fps-60" onclick="setStep('fps', '60', 'screen-iso')">60</button>
         </div>
     </div>
+
     <div id="screen-iso" class="screen">
         <div class="nav-header">
             <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>5. Gestione ISO</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -154,6 +162,7 @@
         <button class="btn" id="iso-manual" onclick="setStep('iso', 'ISO Manuale', 'screen-res')">🔧 ISO MANUALE</button>
         <button class="btn" id="iso-auto" onclick="setStep('iso', 'ISO Automatico', 'screen-res')">🤖 ISO AUTOMATICA</button>
     </div>
+
     <div id="screen-res" class="screen">
         <div class="nav-header">
             <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>Setup Finale</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -167,78 +176,31 @@
 <canvas id="photo-canvas" style="display:none;"></canvas>
 
 <script>
-    let state = { soleRef: parseFloat(localStorage.getItem('soleRef')) || 180, lat: 41.11, lon: 16.87 };
+    let state = { soleRef: parseFloat(localStorage.getItem('soleRef')) || 180, currentNd: "ND32" };
     let historyStack = [{id: 'screen-env', state: {}}];
     let photoLux = 0;
-    let colorTone = "neutral";
-    let sunElevation = 0;
-    let base64Photo = ""; // Memoria per la preview
+    let base64Photo = "";
 
-    function getSuggestedLux() {
-        const mese = new Date().getMonth();
-        if (state.lat > 40 && state.lat < 42 && mese === 4) return 195;
-        if (mese >= 5 && mese <= 7) return 215;
-        return 175;
-    }
+    const WB_FILTERS = {
+        '2800K': "brightness(1.1) hue-rotate(180deg) saturate(1.2)",
+        '3200K': "hue-rotate(160deg) saturate(1.1)",
+        '4500K': "saturate(0.9) brightness(1.1)",
+        '5500K': "contrast(1.05) saturate(1.1)",
+        '6000K': "sepia(0.2) saturate(1.3)",
+        '6500K': "sepia(0.4) saturate(1.5)"
+    };
 
-    function updateSuggestionUI() {
-        const sugg = getSuggestedLux();
-        const loc = (state.lat > 41 && state.lat < 41.2) ? "Bari" : "Località";
-        document.getElementById('suggerimento-local').innerText = `Sugg. Maggio/${loc}: ${sugg} LUX`;
-    }
-
-    function manualCalibrate() {
-        const val = document.getElementById('manual-lux-input').value;
-        if(val && val > 0) {
-            state.soleRef = parseInt(val);
-            localStorage.setItem('soleRef', state.soleRef);
-            alert("Riferimento manuale impostato: " + state.soleRef + " LUX");
-            updateSmart();
-        }
-    }
-
-    function applySuggestedLux() {
-        const sugg = getSuggestedLux();
-        document.getElementById('manual-lux-input').value = sugg;
-        state.soleRef = sugg;
-        localStorage.setItem('soleRef', sugg);
-        alert("Applicato suggerimento per Bari: " + sugg + " LUX");
-        updateSmart();
-    }
-
-    function calculateSunElevation() {
-        const now = new Date();
-        const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
-        const hour = now.getHours() + now.getMinutes() / 60;
-        const decl = 23.45 * Math.sin((Math.PI/180) * (360/365) * (dayOfYear - 81));
-        const hourAngle = (hour - 12) * 15;
-        const latRad = state.lat * (Math.PI/180);
-        const declRad = decl * (Math.PI/180);
-        const haRad = hourAngle * (Math.PI/180);
-        const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(haRad);
-        return Math.asin(sinAlt) * (180/Math.PI);
-    }
+    const ND_BRIGHTNESS = {
+        'NESSUNO': 1.0, 'ND8': 0.85, 'ND16': 0.75, 'ND32': 0.65, 'ND64': 0.50, 'ND128': 0.35
+    };
 
     function startGPS() {
-        document.getElementById('gps-label').innerText = "RICERCA SATELLITI...";
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((pos) => {
-                state.lat = pos.coords.latitude; state.lon = pos.coords.longitude;
-                sunElevation = calculateSunElevation();
-                document.getElementById('gps-label').innerText = `GPS OK | ELEVAZIONE: ${Math.round(sunElevation)}°`;
-                updateSuggestionUI();
+                document.getElementById('gps-label').innerText = `GPS OK | BARI`;
                 updateSmart();
-            }, (err) => { document.getElementById('gps-label').innerText = "GPS DISATTIVATO"; }, { enableHighAccuracy: true });
+            });
         }
-    }
-
-    function calibrateSole() {
-        if(photoLux > 10) {
-            localStorage.setItem('soleRef', photoLux);
-            state.soleRef = photoLux;
-            alert("TARATURA FISICA OK! Riferimento Sole: " + Math.round(photoLux));
-            updateSmart();
-        } else { alert("Analizza prima una foto in piena luce!"); }
     }
 
     function analyzePhoto(event) {
@@ -246,7 +208,7 @@
         if (!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
-            base64Photo = e.target.result; // Salva per preview finale
+            base64Photo = e.target.result;
             const img = new Image();
             img.onload = () => {
                 const canvas = document.getElementById('photo-canvas');
@@ -254,13 +216,10 @@
                 canvas.width = 10; canvas.height = 10;
                 ctx.drawImage(img, 0, 0, 10, 10);
                 const data = ctx.getImageData(0,0,10,10).data;
-                let brightness = 0, rTotal = 0, bTotal = 0;
-                for(let i=0; i<data.length; i+=4) { brightness += (data[i]+data[i+1]+data[i+2])/3; rTotal += data[i]; bTotal += data[i+2]; }
+                let brightness = 0;
+                for(let i=0; i<data.length; i+=4) { brightness += (data[i]+data[i+1]+data[i+2])/3; }
                 photoLux = brightness / (data.length/4);
-                let ratio = (rTotal / bTotal);
-                colorTone = ratio > 1.25 ? "warm" : (ratio < 0.85 ? "cold" : "neutral");
-                sunElevation = calculateSunElevation();
-                document.getElementById('gps-label').innerText = `LUX: ${Math.round(photoLux)} | ELEV: ${Math.round(sunElevation)}° | ${colorTone.toUpperCase()}`;
+                document.getElementById('gps-label').innerText = `LUX: ${Math.round(photoLux)}`;
                 updateSmart();
             };
             img.src = e.target.result;
@@ -268,51 +227,33 @@
         reader.readAsDataURL(file);
     }
 
-    function updateHero() {
-        const now = new Date();
-        document.getElementById('hero-date').innerText = now.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase();
-        document.getElementById('hero-time').innerText = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-        const h = now.getHours();
-        const icon = document.getElementById('hero-weather');
-        if (h >= 20 || h < 6) icon.innerText = "🌙"; else if (h >= 6 && h < 10) icon.innerText = "🌅"; else if (h >= 18 && h < 20) icon.innerText = "🌇"; else icon.innerText = "☀️";
+    function manualCalibrate() {
+        const val = document.getElementById('manual-lux-input').value;
+        if(val > 0) { state.soleRef = parseInt(val); localStorage.setItem('soleRef', state.soleRef); updateSmart(); }
     }
-    setInterval(updateHero, 1000); updateHero();
-    updateSuggestionUI();
 
-    function applySmart(id) {
-        const el = document.getElementById(id);
-        if (el && !el.querySelector('.smart-label-container')) {
-            el.classList.add('btn-smart');
-            const b = document.createElement('div'); b.className = 'smart-label-container';
-            b.innerHTML = '<span class="badge-smart-text">SMART</span>';
-            el.appendChild(b);
-        }
+    function applySuggestedLux() {
+        const sugg = (new Date().getMonth() >= 5 && new Date().getMonth() <= 7) ? 215 : 195;
+        state.soleRef = sugg; document.getElementById('manual-lux-input').value = sugg; updateSmart();
     }
 
     function updateSmart() {
         document.querySelectorAll('.btn-smart').forEach(x => x.classList.remove('btn-smart'));
         document.querySelectorAll('.smart-label-container').forEach(x => x.remove());
-        let ref = state.soleRef;
-        sunElevation = calculateSunElevation();
-
-        if (!state.env) {
-            if (sunElevation > 10) { 
-                if (photoLux > 0 && photoLux < ref * 0.65) applySmart('btn-nuvoloso');
-                else if (sunElevation > 35) applySmart('btn-sole');
-                else applySmart('btn-taglio');
-            } 
-            else if (sunElevation > -2) applySmart('btn-alba');
-            else applySmart('btn-notte');
-        }
-        
-        if (state.env === 'Sole Forte' || state.env === 'Luce di Taglio') applySmart(colorTone === "warm" ? 'wb-6000-s' : 'wb-5500-s');
-        if (state.env === 'Alba/Tramonto') applySmart(colorTone === "warm" ? 'wb-5500-a' : 'wb-3200-a');
-        if (state.env === 'Nuvoloso') applySmart(colorTone === "cold" ? 'wb-6500-c' : 'wb-6000-c');
-        if (state.env === 'Notte') {
-            if (colorTone === "warm") applySmart('wb-2800-n'); else if (colorTone === "neutral") applySmart('wb-4500-n'); else applySmart('wb-5000-n');
-        }
-        if (state.goal === 'Cinema') { applySmart('fps-24'); applySmart('fps-25'); }
+        if (state.env === 'Notte') applySmart('wb-2800-n');
+        else if (state.env === 'Sole Forte') applySmart('wb-5500-s');
+        if (state.goal === 'Cinema') applySmart('fps-25');
         applySmart('iso-manual');
+    }
+
+    function applySmart(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.add('btn-smart');
+            const b = document.createElement('div'); b.className = 'smart-label-container';
+            b.innerHTML = '<span class="badge-smart-text">SMART</span>';
+            el.appendChild(b);
+        }
     }
 
     function setStep(k, v, nextId) {
@@ -326,69 +267,68 @@
         if (historyStack.length > 1) {
             historyStack.pop();
             state = JSON.parse(JSON.stringify(historyStack[historyStack.length - 1].state));
-            showScreen(historyStack[historyStack.length - 1].id); updatePath(); updateSmart();
+            showScreen(historyStack[historyStack.length - 1].id); updatePath();
         }
     }
 
     function resetApp() { 
-        let currentRef = state.soleRef; let currentLat = state.lat; let currentLon = state.lon;
-        photoLux = 0; colorTone = "neutral"; base64Photo = "";
-        state = { soleRef: currentRef, lat: currentLat, lon: currentLon }; 
-        historyStack = [{id: 'screen-env', state: state}]; 
-        const input = document.getElementById('input-foto');
-        if(input) input.value = "";
-        document.getElementById('gps-label').innerText = "GPS PRONTO";
-        showScreen('screen-env'); updatePath(); updateSmart(); 
+        photoLux = 0; base64Photo = "";
+        state = { soleRef: state.soleRef };
+        historyStack = [{id: 'screen-env', state: state}];
+        showScreen('screen-env'); updatePath();
     }
 
     function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
 
     function updatePath() {
         let p = [state.env, state.wb, state.goal, state.fps ? state.fps + "fps" : null, state.iso].filter(x => x);
-        document.querySelectorAll('.path-dynamic').forEach(el => el.innerHTML = p.join(" ➔ ") || "Pronto al volo...");
-        const mainPath = document.getElementById('path-display-main');
-        if(mainPath) mainPath.innerHTML = p.join(" ➔ ") || "Scegli la condizione di luce attuale.";
+        document.querySelectorAll('.path-dynamic').forEach(el => el.innerHTML = p.join(" ➔ "));
+    }
+
+    function refreshPreview() {
+        const img = document.getElementById('preview-img-final');
+        if (!img) return;
+        img.style.filter = `${WB_FILTERS[state.wb] || 'none'} brightness(${ND_BRIGHTNESS[state.currentNd] || 1.0})`;
+        document.getElementById('live-nd-val').innerText = state.currentNd;
+        document.getElementById('live-wb-val').innerText = state.wb;
+        document.querySelectorAll('.btn-wb-live').forEach(b => b.classList.toggle('active-opt', b.innerText === state.wb));
+        document.querySelectorAll('.btn-nd-live').forEach(b => b.classList.toggle('active-opt', b.innerText === state.currentNd));
     }
 
     function render() {
-        let nd = "ND32"; let ref = state.soleRef;
-        let baseLux = photoLux > 0 ? photoLux : (state.env === 'Sole Forte' ? ref : ref/4);
-
-        if (state.env === 'Sole Forte' || (state.env !== 'Alba/Tramonto' && baseLux > ref * 0.85)) {
-            nd = (state.goal === 'Cinema') ? "ND128" : "ND64";
-        } else if (state.env === 'Luce di Taglio') {
-            nd = (baseLux > ref * 0.6) ? "ND64" : "ND32";
-        } else if (state.env === 'Alba/Tramonto') nd = "ND16";
+        let nd = "ND32"; 
+        let lux = photoLux > 0 ? photoLux : 180;
+        if (state.env === 'Sole Forte' || lux > state.soleRef * 0.8) nd = (state.goal === 'Cinema') ? "ND128" : "ND64";
         else if (state.env === 'Nuvoloso') nd = "ND8";
         else if (state.env === 'Notte') nd = "NESSUNO";
-
-        // Calcolo Filtro CSS per Preview
-        let previewFilter = "none";
-        if (state.wb === '2800K') previewFilter = "brightness(1.1) hue-rotate(180deg) saturate(1.2)";
-        else if (state.wb === '3200K') previewFilter = "hue-rotate(160deg) saturate(1.1)";
-        else if (state.wb === '4500K') previewFilter = "saturate(0.9) brightness(1.1)";
-        else if (state.wb === '6000K') previewFilter = "sepia(0.2) saturate(1.3)";
-        else if (state.wb === '6500K') previewFilter = "sepia(0.4) saturate(1.5)";
-
-        const luxFeedback = `<div style="font-size:0.75rem; color:var(--smart); margin-bottom:12px; font-weight:bold; letter-spacing:1px;">📊 ANALISI FISICA: ${Math.round(photoLux)} LUX | SOLE: ${Math.round(sunElevation)}°</div>`;
-        const ott = (state.goal === 'Cinema') ? `1/${state.fps * 2}s` : `FLUIDO (>1/${state.fps * 4}s)`;
+        
+        state.currentNd = nd;
+        const ott = (state.goal === 'Cinema') ? `1/${state.fps * 2}s` : `FLUIDO`;
 
         document.getElementById('result').innerHTML = `
-            ${luxFeedback}
-            
             <div class="card" style="border-left-color: var(--smart); padding: 15px;">
-                <span class="card-title">Look Preview (Simulazione ${state.wb})</span>
+                <span class="card-title">Live Preview Console</span>
                 <div class="preview-box">
-                    ${base64Photo ? `<img id="preview-img-final" src="${base64Photo}" style="filter: ${previewFilter}">` : `<span style="font-size:0.7rem; color:#444; text-align:center; padding:20px;">Analisi foto non eseguita.<br>Preview non disponibile.</span>`}
+                    ${base64Photo ? `<img id="preview-img-final" src="${base64Photo}">` : `<span style="color:#444; font-size:0.7rem; display:flex; align-items:center; justify-content:center; height:100%;">Carica foto per preview</span>`}
+                </div>
+                <div style="font-size:0.6rem; color:#8b949e; text-transform:uppercase; font-weight:bold; margin-bottom:4px;">Test Filtri ND</div>
+                <div class="console-row">
+                    ${['NESSUNO','ND8','ND16','ND32','ND64','ND128'].map(n => `<button class="console-btn btn-nd-live" onclick="state.currentNd='${n}'; refreshPreview();">${n}</button>`).join('')}
+                </div>
+                <div style="font-size:0.6rem; color:#8b949e; text-transform:uppercase; font-weight:bold; margin-bottom:4px; margin-top:5px;">Test WB</div>
+                <div class="console-row">
+                    ${Object.keys(WB_FILTERS).map(k => `<button class="console-btn btn-wb-live" onclick="state.wb='${k}'; refreshPreview();">${k}</button>`).join('')}
                 </div>
             </div>
 
-            <div class="card"><span class="card-title">Hardware</span>💎 FILTRO: <span class="val">${nd}</span></div>
+            <div class="card"><span class="card-title">Hardware</span>💎 FILTRO: <span id="live-nd-val" class="val">${nd}</span></div>
+            
             <div class="card" style="border-left-color: var(--action)">
                 <span class="card-title">Camera Setting</span>
-                FPS: <span class="val">${state.fps}</span> | WB: <span class="val">${state.wb}</span><br>
+                FPS: <span class="val">${state.fps}</span> | WB: <span id="live-wb-val" class="val">${state.wb}</span><br>
                 OTTURATORE: <span class="val">${ott}</span>
             </div>
+
             <div class="card" style="border-left-color: var(--warn)">
                 <span class="card-title">Esposizione (${state.iso})</span>
                 ${state.iso === 'ISO Manuale' ? 
@@ -401,13 +341,22 @@
                     </div>` : 
                     `<div class="instruction-box"><b>ISO AUTO</b> (Max 200) | <b>EV: -0.3</b></div>`}
             </div>
+
             <div class="card" style="border-left-color: var(--target); background: rgba(56, 189, 248, 0.05);">
                 <span class="card-title">Fondamentale</span>
                 <b>🔒 BLOCCO AE:</b>
-                <div class="instruction-box">Punta l'area più chiara della scena e blocca l'esposizione (lucchetto) per evitare sfarfallii. In ogni modo controlla l'istogramma che sia tutto concentrato nella parte centrale prima del blocco</div>
+                <div class="instruction-box">Punta l'area più chiara della scena e blocca l'esposizione (lucchetto) per evitare sfarfallii. In caso di sbalzi luminosi ripeti la procedura.</div>
             </div>
         `;
+        refreshPreview();
     }
+
+    function updateHero() {
+        const now = new Date();
+        document.getElementById('hero-date').innerText = now.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase();
+        document.getElementById('hero-time').innerText = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    }
+    setInterval(updateHero, 1000); updateHero();
 </script>
 </body>
 </html>
