@@ -3,229 +3,431 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>DJI Mini 5 Pro - Pro Setup v112</title>
+    <title>DJI Mini 5 Pro - Pro Setup v106 (Astro-Season)</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚁</text></svg>">
     <style>
         :root { --bg: #05070b; --card: #161b22; --accent: #deff9a; --text: #f0f6fc; --warn: #ffab70; --target: #38bdf8; --smart: #00f2ff; --action: #c084fc; }
         html, body { touch-action: manipulation; font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; }
-        
         .hero-info { text-align: center; margin: 10px 0 25px 0; padding: 30px 15px; background: linear-gradient(180deg, rgba(222, 255, 154, 0.1) 0%, rgba(5, 7, 11, 0) 100%); border-radius: 32px; border: 1px solid rgba(255,255,255,0.05); }
-        .hero-main { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+        .hero-date { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 4px; color: #8b949e; margin-bottom: 15px; font-weight: 500; }
+        .hero-main { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+        .hero-weather { font-size: 5.5rem; margin-bottom: 10px; filter: drop-shadow(0 0 25px rgba(222, 255, 154, 0.4)); }
         .hero-time { font-size: 3.8rem; font-weight: 900; color: var(--text); letter-spacing: -2px; }
-        .hero-version { font-size: 0.8rem; color: var(--accent); font-weight: 800; letter-spacing: 3px; margin-top: 8px; text-transform: uppercase; }
-
-        .sensor-panel { background: rgba(0, 242, 255, 0.05); border: 1px solid var(--smart); border-radius: 20px; padding: 15px; margin-bottom: 20px; }
-        .sensor-status { font-size: 0.7rem; color: var(--smart); text-transform: uppercase; font-weight: bold; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-        .pulse { width: 8px; height: 8px; background: var(--smart); border-radius: 50%; animation: blink 2s infinite; }
+        /* Aggiunta Versione */
+        .hero-v { font-size: 0.7rem; color: var(--accent); font-weight: 800; letter-spacing: 3px; margin-top: 10px; opacity: 0.8; }
+        
+        .sensor-panel { background: rgba(0, 242, 255, 0.05); border: 1px solid var(--smart); border-radius: 20px; padding: 15px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .sensor-status { font-size: 0.7rem; color: var(--smart); text-transform: uppercase; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        .pulse { width: 8px; height: 8px; background: var(--smart); border-radius: 50%; box-shadow: 0 0 8px var(--smart); animation: blink 2s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-        .screen { display: none; max-width: 500px; margin: 0 auto; animation: fadeIn 0.4s ease-out; }
+        .screen { display: none; max-width: 500px; margin: 0 auto; animation: fadeIn 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
         .active { display: block !important; }
-        .btn { display: block; width: 100%; padding: 22px; margin: 12px 0; background: var(--card); border: 1px solid #30363d; border-radius: 20px; color: #fff; font-size: 1rem; text-align: left; position: relative; cursor: pointer; box-sizing: border-box; }
-        
-        .btn-smart { border: 2px solid var(--smart) !important; background: rgba(0, 242, 255, 0.1) !important; }
-        .smart-tag { position: absolute; top: -10px; right: 15px; background: var(--smart); color: #000; font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 8px; }
+        .nav-header { display: flex; flex-direction: column; margin-bottom: 20px; border-bottom: 1px solid #30363d; position: sticky; top: 0; background: var(--bg); z-index: 100; padding-bottom: 15px; }
+        .nav-top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .path-display { font-size: 0.75rem; color: var(--target); background: rgba(56, 189, 248, 0.1); padding: 12px 16px; border-radius: 10px; margin-top: 12px; border-left: 4px solid var(--target); min-height: 1.2em; line-height: 1.4; }
+        .nav-btn-circle { width: 48px; height: 48px; border-radius: 50%; background: #21262d; border: 1px solid #30363d; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; }
+        h1 { color: var(--accent); font-size: 1rem; text-transform: uppercase; margin: 0; font-weight: 900; letter-spacing: 1px; }
+        .btn { display: block; width: 100%; padding: 24px; margin: 14px 0; background: var(--card); border: 1px solid #30363d; border-radius: 22px; color: #fff; font-size: 1.1rem; text-align: left; position: relative; box-sizing: border-box; cursor: pointer; transition: transform 0.1s; }
+        .btn-smart { border: 2.5px solid var(--smart) !important; background: rgba(0, 242, 255, 0.05) !important; }
+        .smart-label-container { position: absolute; top: -14px; right: 20px; background: var(--smart); padding: 4px 12px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,242,255,0.5); }
+        .badge-smart-text { color: #000; font-size: 0.7rem; font-weight: 900; }
+        .fps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 15px 0; }
+        .btn-fps { padding: 10px; text-align: center; height: 75px; display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 1.4rem; margin: 0; border-radius: 20px; }
+        .card { background: var(--card); padding: 25px; border-radius: 28px; margin-top: 20px; border-left: 8px solid var(--accent); box-shadow: 0 12px 40px rgba(0,0,0,0.6); }
+        .card-title { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #8b949e; margin-bottom: 10px; font-weight: 700; }
+        .val { color: #ffff00; font-weight: 900; font-family: sans-serif; font-size: 1.6rem; }
+        .instruction-box { margin-top: 18px; padding: 20px; background: #1a1a1a; border-radius: 18px; font-size: 1.2rem; line-height: 1.6; color: #ffffff; border: 2px solid #ffff00; font-weight: bold; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-tara { background: transparent; border: 1px dashed var(--accent); color: var(--accent); font-size: 0.6rem; padding: 5px; border-radius: 8px; cursor: pointer; margin-top: 5px; text-transform: uppercase; }
+        .manual-box { width: 100%; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 12px; border: 1px solid rgba(0,242,255,0.2); margin-top: 5px; box-sizing: border-box; }
+        .manual-input-row { display: flex; gap: 8px; margin-top: 8px; }
+        .manual-input-row input { flex: 2; background: #000; border: 1px solid var(--smart); color: #fff; padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; }
+        .manual-input-row button { flex: 1; background: var(--smart); border: none; color: #000; border-radius: 8px; font-weight: 900; font-size: 0.7rem; cursor: pointer; }
 
-        .fps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .btn-fps { padding: 15px; text-align: center; font-weight: 900; font-size: 1.2rem; }
-        
-        .card { background: var(--card); padding: 20px; border-radius: 24px; margin-top: 15px; border-left: 6px solid var(--accent); }
-        .val { color: #ffff00; font-weight: 900; font-size: 1.4rem; }
-
-        /* SIMULATORE CSS */
-        .sim-box { background: #000; border-radius: 20px; overflow: hidden; margin-top: 15px; border: 1px solid #333; position: relative; }
-        #preview-img { width: 100%; height: 180px; object-fit: cover; transition: 0.3s; filter: brightness(1) sepia(0); }
-        .sim-controls { padding: 10px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; background: var(--card); }
-        .btn-sim { padding: 8px 2px; font-size: 0.65rem; font-weight: bold; border-radius: 8px; border: 1px solid #444; background: #0b0e14; color: #fff; cursor: pointer; text-align: center; }
+        /* Stili Simulatore Preview */
+        .sim-preview-box { margin-top: 15px; background: #000; border-radius: 20px; overflow: hidden; border: 1px solid #333; position: relative; }
+        #sim-img { width: 100%; height: 180px; object-fit: cover; transition: 0.3s; filter: brightness(1) sepia(0); }
+        .sim-tools { padding: 12px; background: var(--card); }
+        .sim-row { display: flex; gap: 5px; margin-bottom: 8px; flex-wrap: wrap; }
+        .btn-sim { flex: 1; min-width: 60px; padding: 10px 2px; font-size: 0.6rem; font-weight: bold; border-radius: 8px; border: 1px solid #444; background: #0b0e14; color: #fff; cursor: pointer; text-align: center; }
         .btn-sim.active { background: var(--smart); color: #000; border-color: var(--smart); }
-        .sim-label { grid-column: span 4; font-size: 0.6rem; color: var(--accent); text-transform: uppercase; margin-top: 5px; margin-left: 5px; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .sim-title { font-size: 0.6rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="hero-info">
-    <div id="hero-date" style="font-size: 0.7rem; color: #8b949e; letter-spacing: 2px;">-- -- ----</div>
+    <div id="hero-date" class="hero-date">-- -- ----</div>
     <div class="hero-main">
+        <div id="hero-weather" class="hero-weather">☀️</div>
         <div id="hero-time" class="hero-time">00:00</div>
-        <div class="hero-version">v112 PRO-SIM</div>
+        <div class="hero-v">v112 PRO-SIM</div>
     </div>
 </div>
 
-<div class="sensor-panel">
-    <div class="sensor-status"><div class="pulse"></div> <span id="gps-label">ATTESA GPS / FOTO...</span></div>
-    <div style="display:flex; gap:10px;">
-        <button class="btn" onclick="getLocation()" style="margin:0; padding:12px; flex:1; text-align:center; background:var(--smart); color:#000; font-weight:bold; font-size:0.7rem;">🛰️ LOCALIZZA</button>
-        <label class="btn" style="margin:0; padding:12px; flex:1; text-align:center; border-color:var(--smart); font-size:0.7rem; font-weight:bold;">
-            📸 ANALISI FOTO
-            <input type="file" accept="image/*" capture="environment" style="display:none" onchange="analyzeImage(event)">
-        </label>
-    </div>
-</div>
-
-<div id="screen-env" class="screen active">
-    <h1 style="font-size:0.9rem; color:var(--accent);">1. AMBIENTE</h1>
-    <button class="btn" id="btn-sole" onclick="next('env', 'Sole Forte', 'screen-fps')">☀️ SOLE PIENO / ZENIT</button>
-    <button class="btn" id="btn-taglio" onclick="next('env', 'Luce di Taglio', 'screen-fps')">📐 MATTINA / POMERIGGIO</button>
-    <button class="btn" id="btn-alba" onclick="next('env', 'Alba/Tramonto', 'screen-fps')">🌅 ALBA / TRAMONTO</button>
-    <button class="btn" id="btn-nuvoloso" onclick="next('env', 'Nuvoloso', 'screen-fps')">☁️ NUVOLOSO / OMBRA</button>
-    <button class="btn" id="btn-notte" onclick="next('env', 'Notte', 'screen-fps')">🌙 NOTTE / CITTÀ</button>
-</div>
-
-<div id="screen-fps" class="screen">
-    <h1 style="font-size:0.9rem; color:var(--accent);">2. FPS</h1>
-    <div class="fps-grid">
-        <button class="btn btn-fps" id="fps-24" onclick="next('fps', '24', 'screen-res')">24</button>
-        <button class="btn btn-fps" id="fps-25" onclick="next('fps', '25', 'screen-res')">25</button>
-        <button class="btn btn-fps" id="fps-30" onclick="next('fps', '30', 'screen-res')">30</button>
-    </div>
-</div>
-
-<div id="screen-res" class="screen">
-    <div id="result"></div>
-    
-    <div class="sim-box">
-        <img id="preview-img" src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80" alt="Preview">
-        <div class="sim-controls">
-            <div class="sim-label">Simulazione Filtro ND</div>
-            <button class="btn-sim" onclick="simND(1, this)">OFF</button>
-            <button class="btn-sim" onclick="simND(0.5, this)">ND16</button>
-            <button class="btn-sim" onclick="simND(0.2, this)">ND64</button>
-            <button class="btn-sim" onclick="simND(0.1, this)">ND128</button>
-            
-            <div class="sim-label">Simulazione Bilanciamento Bianco (Kelvin)</div>
-            <button class="btn-sim" onclick="simWB(3200, this)">3200K</button>
-            <button class="btn-sim" onclick="simWB(5500, this)">5500K</button>
-            <button class="btn-sim" onclick="simWB(6500, this)">6500K</button>
-            <button class="btn-sim" onclick="simWB(8000, this)">8000K</button>
+<div id="app" style="max-width: 500px; margin: 0 auto;">
+    <div class="sensor-panel">
+        <div class="sensor-status"><div class="pulse"></div> <span id="gps-label">GPS PRONTO</span></div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn" onclick="startGPS()" style="margin:0; padding:15px; font-size:0.8rem; flex:1; text-align:center; background: var(--smart); color:#000;">🛰️ LOCALIZZA</button>
+            <label class="btn" style="margin:0; padding:15px; font-size:0.8rem; flex:1; text-align:center; border-color: var(--smart);">
+                📸 ANALISI AMBIENTE
+                <input id="input-foto" type="file" accept="image/*" capture="environment" style="display:none" onchange="analyzePhoto(event)">
+            </label>
+            <div class="manual-box">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.65rem; color: #8b949e; text-transform: uppercase;">Taratura Manuale</span>
+                    <span id="suggerimento-local" style="font-size: 0.65rem; color: var(--accent); font-weight: bold;">Suggerimento: --</span>
+                </div>
+                <div class="manual-input-row">
+                    <input type="number" id="manual-lux-input" placeholder="Valore LUX">
+                    <button onclick="manualCalibrate()">SALVA</button>
+                </div>
+                <button onclick="applySuggestedLux()" style="width: 100%; margin-top: 8px; background: transparent; border: 1px dashed var(--accent); color: var(--accent); padding: 6px; border-radius: 6px; font-size: 0.6rem; cursor: pointer;">APPLICA VALORE CONSIGLIATO</button>
+            </div>
+            <button class="btn-tara" style="width:100%" onclick="calibrateSole()">🎯 TARATURA DA FOTO (Imposta riferimento attuale)</button>
         </div>
     </div>
 
-    <button class="btn" onclick="location.reload()" style="background:var(--accent); color:#000; text-align:center; font-weight:bold; margin-top:20px;">🔄 RESET</button>
+    <div id="screen-env" class="screen active">
+        <div class="nav-header">
+            <div class="nav-top-row"><h1>1. Ambiente</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
+            <div id="path-display-main" class="path-display">Scegli la condizione di luce o usa i sensori sopra.</div>
+        </div>
+        <button class="btn" id="btn-sole" onclick="setStep('env', 'Sole Forte', 'screen-wb-sole')">☀️ SOLE PIENO / ZENIT</button>
+        <button class="btn" id="btn-taglio" onclick="setStep('env', 'Luce di Taglio', 'screen-wb-sole')">📐 MATTINA / POMERIGGIO</button>
+        <button class="btn" id="btn-alba" onclick="setStep('env', 'Alba/Tramonto', 'screen-wb-alba')">🌅 ALBA / TRAMONTO</button>
+        <button class="btn" id="btn-nuvoloso" onclick="setStep('env', 'Nuvoloso', 'screen-wb-cloud')">☁️ NUVOLOSO / OMBRA</button>
+        <button class="btn" id="btn-notte" onclick="setStep('env', 'Notte', 'screen-wb-night')">🌙 NOTTE / CITTÀ</button>
+    </div>
+
+    <div id="screen-wb-sole" class="screen">
+        <div class="nav-header">
+            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
+            <div class="path-display path-dynamic"></div>
+        </div>
+        <button class="btn" id="wb-5500-s" onclick="setStep('wb', '5500K', 'screen-goal')">☀️ GIORNO STANDARD (5500K)</button>
+        <button class="btn" id="wb-6000-s" onclick="setStep('wb', '6000K', 'screen-goal')">☀️ LUCE LEGGERMENTE CALDA (6000K)</button>
+    </div>
+    <div id="screen-wb-alba" class="screen">
+        <div class="nav-header">
+            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
+            <div class="path-display path-dynamic"></div>
+        </div>
+        <button class="btn" id="wb-5500-a" onclick="setStep('wb', '5500K', 'screen-goal')">🌅 ESALTA COLORI CALDI (5500K)</button>
+        <button class="btn" id="wb-3200-a" onclick="setStep('wb', '3200K', 'screen-goal')">🌅 BILANCIA / NEUTRALIZZA (3200K)</button>
+    </div>
+    <div id="screen-wb-cloud" class="screen">
+        <div class="nav-header">
+            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
+            <div class="path-display path-dynamic"></div>
+        </div>
+        <button class="btn" id="wb-6500-c" onclick="setStep('wb', '6500K', 'screen-goal')">☁️ OMBRA PROFONDA (6500K)</button>
+        <button class="btn" id="wb-6000-c" onclick="setStep('wb', '6000K', 'screen-goal')">⛅ NUVOLOSO (6000K)</button>
+    </div>
+    <div id="screen-wb-night" class="screen">
+        <div class="nav-header">
+            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
+            <div class="path-display path-dynamic"></div>
+        </div>
+        <button class="btn" id="wb-2800-n" onclick="setStep('wb', '2800K', 'screen-goal')">🟠 LAMPIONI GIALLI (2800K)</button>
+        <button class="btn" id="wb-4500-n" onclick="setStep('wb', '4500K', 'screen-goal')">⚪ LUCI LED / MODERNE (4500K)</button>
+        <button class="btn" id="wb-5000-n" onclick="setStep('wb', '5000K', 'screen-goal')">🌑 BUIO TOTALE (5000K)</button>
+    </div>
+
+    <div id="screen-goal" class="screen">
+        <div class="nav-header">
+            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>3. Stile</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
+            <div class="path-display path-dynamic"></div>
+        </div>
+        <button class="btn" id="goal-cinema" onclick="setStep('goal', 'Cinema', 'screen-fps')">🎬 CINEMA (Motion Blur)</button>
+        <button class="btn" id="goal-sport" onclick="setStep('goal', 'Sport', 'screen-fps')">🏎️ SPORT (Nitido)</button>
+    </div>
+    <div id="screen-fps" class="screen">
+        <div class="nav-header">
+            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>4. FPS</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
+            <div class="path-display path-dynamic"></div>
+        </div>
+        <div class="fps-grid">
+            <button class="btn btn-fps" id="fps-24" onclick="setStep('fps', '24', 'screen-iso')">24</button>
+            <button class="btn btn-fps" id="fps-25" onclick="setStep('fps', '25', 'screen-iso')">25</button>
+            <button class="btn btn-fps" id="fps-30" onclick="setStep('fps', '30', 'screen-iso')">30</button>
+            <button class="btn btn-fps" id="fps-50" onclick="setStep('fps', '50', 'screen-iso')">50</button>
+            <button class="btn btn-fps" id="fps-60" onclick="setStep('fps', '60', 'screen-iso')">60</button>
+        </div>
+    </div>
+    <div id="screen-iso" class="screen">
+        <div class="nav-header">
+            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>5. Gestione ISO</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
+            <div class="path-display path-dynamic"></div>
+        </div>
+        <button class="btn" id="iso-manual" onclick="setStep('iso', 'ISO Manuale', 'screen-res')">🔧 ISO MANUALE</button>
+        <button class="btn" id="iso-auto" onclick="setStep('iso', 'ISO Automatico', 'screen-res')">🤖 ISO AUTOMATICA</button>
+    </div>
+    <div id="screen-res" class="screen">
+        <div class="nav-header">
+            <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>Setup Finale</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
+            <div class="path-display path-dynamic"></div>
+        </div>
+        <div id="result"></div>
+        <button class="btn" style="background: var(--accent); color: #000; text-align: center; font-weight: 900; margin-top: 30px;" onclick="resetApp()">🔄 NUOVO DECOLLO</button>
+    </div>
 </div>
 
+<canvas id="photo-canvas" style="display:none;"></canvas>
+
 <script>
-    let state = { lat: 41.9, sunAlt: null, currentB: 1, currentS: 0 };
+    let state = { soleRef: parseFloat(localStorage.getItem('soleRef')) || 180, lat: 41.11, lon: 16.87, currentB: 1, currentS: 0 };
+    let historyStack = [{id: 'screen-env', state: {}}];
+    let photoLux = 0;
+    let colorTone = "neutral";
+    let sunElevation = 0;
+    let userImgData = null;
 
-    function getLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(pos => {
-                state.lat = pos.coords.latitude;
-                calculateSun();
-            });
+    function getSuggestedLux() {
+        const mese = new Date().getMonth();
+        if (state.lat > 40 && state.lat < 42 && mese === 4) return 195;
+        if (mese >= 5 && mese <= 7) return 215;
+        return 175;
+    }
+
+    function updateSuggestionUI() {
+        const sugg = getSuggestedLux();
+        const loc = (state.lat > 41 && state.lat < 41.2) ? "Bari" : "Località";
+        document.getElementById('suggerimento-local').innerText = `Sugg. Maggio/${loc}: ${sugg} LUX`;
+    }
+
+    function manualCalibrate() {
+        const val = document.getElementById('manual-lux-input').value;
+        if(val && val > 0) {
+            state.soleRef = parseInt(val);
+            localStorage.setItem('soleRef', state.soleRef);
+            alert("Riferimento manuale impostato: " + state.soleRef + " LUX");
+            updateSmart();
         }
     }
 
-    function analyzeImage(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                document.getElementById('preview-img').src = e.target.result;
-                document.getElementById('gps-label').innerText = "FOTO CARICATA PER PREVIEW";
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
-    function calculateSun() {
-        const now = new Date();
-        const start = new Date(now.getFullYear(), 0, 0);
-        const day = Math.floor((now - start) / 86400000);
-        const decl = 23.45 * Math.sin((360 / 365) * (day - 81) * (Math.PI / 180));
-        const hour = now.getHours() + now.getMinutes() / 60;
-        const h = (hour - 12) * 15;
-        const alt = Math.asin(Math.sin(state.lat * Math.PI / 180) * Math.sin(decl * Math.PI / 180) + Math.cos(state.lat * Math.PI / 180) * Math.cos(decl * Math.PI / 180) * Math.cos(h * Math.PI / 180)) * 180 / Math.PI;
-        state.sunAlt = alt;
-        document.getElementById('gps-label').innerText = `SOLE: ${Math.round(alt)}° | LAT: ${state.lat.toFixed(1)}`;
+    function applySuggestedLux() {
+        const sugg = getSuggestedLux();
+        document.getElementById('manual-lux-input').value = sugg;
+        state.soleRef = sugg;
+        localStorage.setItem('soleRef', sugg);
+        alert("Applicato suggerimento per Bari: " + sugg + " LUX");
         updateSmart();
     }
 
-    function simND(val, btn) {
-        state.currentB = val;
-        applyFilters();
-        setActive(btn);
+    function calculateSunElevation() {
+        const now = new Date();
+        const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+        const hour = now.getHours() + now.getMinutes() / 60;
+        const decl = 23.45 * Math.sin((Math.PI/180) * (360/365) * (dayOfYear - 81));
+        const hourAngle = (hour - 12) * 15;
+        const latRad = state.lat * (Math.PI/180);
+        const declRad = decl * (Math.PI/180);
+        const haRad = hourAngle * (Math.PI/180);
+        const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(haRad);
+        return Math.asin(sinAlt) * (180/Math.PI);
     }
 
-    function simWB(k, btn) {
-        // Logica semplificata: < 5000 caldo (sepia), > 5500 freddo (blue)
-        if(k < 5000) state.currentS = 0.5;
-        else if(k > 6000) state.currentS = -0.3;
-        else state.currentS = 0;
-        applyFilters();
-        setActive(btn);
+    function startGPS() {
+        document.getElementById('gps-label').innerText = "RICERCA SATELLITI...";
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((pos) => {
+                state.lat = pos.coords.latitude; state.lon = pos.coords.longitude;
+                sunElevation = calculateSunElevation();
+                document.getElementById('gps-label').innerText = `GPS OK | ELEVAZIONE: ${Math.round(sunElevation)}°`;
+                updateSuggestionUI();
+                updateSmart();
+            }, (err) => { document.getElementById('gps-label').innerText = "GPS DISATTIVATO"; }, { enableHighAccuracy: true });
+        }
     }
 
-    function applyFilters() {
-        const img = document.getElementById('preview-img');
-        const hue = state.currentS < 0 ? `hue-rotate(180deg) saturate(${Math.abs(state.currentS)*2})` : `sepia(${state.currentS})`;
-        img.style.filter = `brightness(${state.currentB}) ${hue}`;
+    function calibrateSole() {
+        if(photoLux > 10) {
+            localStorage.setItem('soleRef', photoLux);
+            state.soleRef = photoLux;
+            alert("TARATURA FISICA OK! Riferimento Sole: " + Math.round(photoLux));
+            updateSmart();
+        } else { alert("Analizza prima una foto in piena luce!"); }
     }
 
-    function setActive(btn) {
-        const parent = btn.parentElement;
-        parent.querySelectorAll('.btn-sim').forEach(b => {
-            if(b.innerText === btn.innerText || (btn.innerText.includes('K') && b.innerText.includes('K'))) {
-                // Questo check è un po' grezzo per dividere le due righe
-            }
-        });
-        // Semplifichiamo: resetta tutti i vicini della stessa categoria
-        btn.parentElement.querySelectorAll('.btn-sim').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+    function analyzePhoto(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.getElementById('photo-canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 100; canvas.height = 100;
+                ctx.drawImage(img, 0, 0, 100, 100);
+                userImgData = e.target.result;
+                const data = ctx.getImageData(0,0,100,100).data;
+                let brightness = 0, rTotal = 0, bTotal = 0;
+                for(let i=0; i<data.length; i+=4) { brightness += (data[i]+data[i+1]+data[i+2])/3; rTotal += data[i]; bTotal += data[i+2]; }
+                photoLux = brightness / 2500;
+                let ratio = (rTotal / bTotal);
+                colorTone = ratio > 1.25 ? "warm" : (ratio < 0.85 ? "cold" : "neutral");
+                sunElevation = calculateSunElevation();
+                document.getElementById('gps-label').innerText = `LUX: ${Math.round(photoLux)} | ELEV: ${Math.round(sunElevation)}° | ${colorTone.toUpperCase()}`;
+                updateSmart();
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function updateHero() {
+        const now = new Date();
+        document.getElementById('hero-date').innerText = now.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase();
+        document.getElementById('hero-time').innerText = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+        const h = now.getHours();
+        const icon = document.getElementById('hero-weather');
+        if (h >= 20 || h < 6) icon.innerText = "🌙"; else if (h >= 6 && h < 10) icon.innerText = "🌅"; else if (h >= 18 && h < 20) icon.innerText = "🌇"; else icon.innerText = "☀️";
+    }
+    setInterval(updateHero, 1000); updateHero();
+    updateSuggestionUI();
+
+    function applySmart(id) {
+        const el = document.getElementById(id);
+        if (el && !el.querySelector('.smart-label-container')) {
+            el.classList.add('btn-smart');
+            const b = document.createElement('div'); b.className = 'smart-label-container';
+            b.innerHTML = '<span class="badge-smart-text">SMART</span>';
+            el.appendChild(b);
+        }
     }
 
     function updateSmart() {
-        document.querySelectorAll('.btn-smart').forEach(b => b.classList.remove('btn-smart'));
-        document.querySelectorAll('.smart-tag').forEach(t => t.remove());
-        if (state.sunAlt !== null) {
-            if (state.sunAlt < -6) markSmart('btn-notte');
-            else if (state.sunAlt >= -6 && state.sunAlt <= 12) markSmart('btn-alba');
-            else if (state.sunAlt > 12 && state.sunAlt <= 35) markSmart('btn-taglio');
-            else markSmart('btn-sole');
+        document.querySelectorAll('.btn-smart').forEach(x => x.classList.remove('btn-smart'));
+        document.querySelectorAll('.smart-label-container').forEach(x => x.remove());
+        let ref = state.soleRef;
+        sunElevation = calculateSunElevation();
+        if (!state.env) {
+            if (sunElevation > 10) { 
+                if (photoLux > 0 && photoLux < ref * 0.65) applySmart('btn-nuvoloso');
+                else if (sunElevation > 35) applySmart('btn-sole');
+                else applySmart('btn-taglio');
+            } 
+            else if (sunElevation > -2) applySmart('btn-alba');
+            else applySmart('btn-notte');
         }
-        markSmart('fps-24');
+        if (state.env === 'Sole Forte' || state.env === 'Luce di Taglio') applySmart(colorTone === "warm" ? 'wb-6000-s' : 'wb-5500-s');
+        if (state.env === 'Alba/Tramonto') applySmart(colorTone === "warm" ? 'wb-5500-a' : 'wb-3200-a');
+        if (state.env === 'Nuvoloso') applySmart(colorTone === "cold" ? 'wb-6500-c' : 'wb-6000-c');
+        if (state.env === 'Notte') { if (colorTone === "warm") applySmart('wb-2800-n'); else if (colorTone === "neutral") applySmart('wb-4500-n'); else applySmart('wb-5000-n'); }
+        if (state.goal === 'Cinema') { applySmart('fps-24'); applySmart('fps-25'); }
+        applySmart('iso-manual');
     }
 
-    function markSmart(id) {
-        const el = document.getElementById(id);
-        if (el) {
-            el.classList.add('btn-smart');
-            const tag = document.createElement('div');
-            tag.className = 'smart-tag';
-            tag.innerText = 'SMART';
-            el.appendChild(tag);
-        }
-    }
-
-    function next(k, v, screenId) {
+    function setStep(k, v, nextId) {
         state[k] = v;
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(screenId).classList.add('active');
-        if(screenId === 'screen-res') render();
+        historyStack.push({id: nextId, state: JSON.parse(JSON.stringify(state))});
+        showScreen(nextId); updatePath(); updateSmart();
+        if (nextId === 'screen-res') render();
+    }
+
+    function goBack() {
+        if (historyStack.length > 1) {
+            historyStack.pop();
+            state = JSON.parse(JSON.stringify(historyStack[historyStack.length - 1].state));
+            showScreen(historyStack[historyStack.length - 1].id); updatePath(); updateSmart();
+        }
+    }
+
+    function resetApp() { 
+        let currentRef = state.soleRef; let currentLat = state.lat; let currentLon = state.lon;
+        state = { soleRef: currentRef, lat: currentLat, lon: currentLon, currentB: 1, currentS: 0 }; 
+        historyStack = [{id: 'screen-env', state: state}]; 
+        showScreen('screen-env'); updatePath(); updateSmart(); 
+    }
+
+    function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
+
+    function updatePath() {
+        let p = [state.env, state.wb, state.goal, state.fps ? state.fps + "fps" : null, state.iso].filter(x => x);
+        document.querySelectorAll('.path-dynamic').forEach(el => el.innerHTML = p.join(" ➔ ") || "Pronto al volo...");
+        const mainPath = document.getElementById('path-display-main');
+        if(mainPath) mainPath.innerHTML = p.join(" ➔ ") || "Scegli la condizione di luce attuale.";
+    }
+
+    /* Logica Simulatore Preview */
+    function simND(val, btn) {
+        state.currentB = val;
+        applySim();
+        document.querySelectorAll('.nd-grp').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    function simWB(s, btn) {
+        state.currentS = s;
+        applySim();
+        document.querySelectorAll('.wb-grp').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    function applySim() {
+        const img = document.getElementById('sim-img');
+        if(!img) return;
+        img.style.filter = `brightness(${state.currentB}) sepia(${state.currentS})`;
     }
 
     function render() {
-        let nd = (state.env === 'Sole Forte') ? "ND128" : (state.env === 'Luce di Taglio') ? "ND64" : "ND16";
-        if(state.env === 'Notte') nd = "NESSUNO";
-        
+        let nd = "ND32"; let ref = state.soleRef;
+        if (state.env === 'Sole Forte') nd = (state.goal === 'Cinema') ? "ND128" : "ND64";
+        else if (state.env === 'Luce di Taglio') nd = "ND32";
+        else if (state.env === 'Alba/Tramonto') nd = "ND16";
+        else if (state.env === 'Nuvoloso') nd = "ND8";
+        else if (state.env === 'Notte') nd = "NESSUNO";
+
+        const ott = (state.goal === 'Cinema') ? `1/${state.fps * 2}s` : `FLUIDO (>1/${state.fps * 4}s)`;
+        const placeholderImg = "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80";
+
         document.getElementById('result').innerHTML = `
-            <div class="card">
-                <span style="font-size:0.7rem; color:#8b949e;">SETUP CONSIGLIATO</span><br>
-                FILTRO: <span class="val">${nd}</span><br>
-                OTTURATORE: <span class="val">1/${state.fps * 2}s</span>
-            </div>`;
-    }
+            <div class="sim-preview-box">
+                <img id="sim-img" src="${userImgData || placeholderImg}">
+                <div class="sim-tools">
+                    <div class="sim-title">Test Filtro ND</div>
+                    <div class="sim-row">
+                        <button class="btn-sim nd-grp active" onclick="simND(1, this)">OFF</button>
+                        <button class="btn-sim nd-grp" onclick="simND(0.6, this)">ND16</button>
+                        <button class="btn-sim nd-grp" onclick="simND(0.3, this)">ND64</button>
+                        <button class="btn-sim nd-grp" onclick="simND(0.15, this)">ND128</button>
+                    </div>
+                    <div class="sim-title">Test Bilanciamento (K)</div>
+                    <div class="sim-row">
+                        <button class="btn-sim wb-grp" onclick="simWB(0.6, this)">3200K</button>
+                        <button class="btn-sim wb-grp active" onclick="simWB(0, this)">5500K</button>
+                        <button class="btn-sim wb-grp" onclick="simWB(0.2, this)">6500K</button>
+                        <button class="btn-sim wb-grp" onclick="simWB(0.4, this)">8000K</button>
+                    </div>
+                </div>
+            </div>
 
-    function tick() {
-        const now = new Date();
-        document.getElementById('hero-time').innerText = now.toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'});
-        document.getElementById('hero-date').innerText = now.toLocaleDateString('it-IT', {weekday:'long', day:'2-digit', month:'long'}).toUpperCase();
+            <div class="card"><span class="card-title">Hardware</span>💎 FILTRO: <span class="val">${nd}</span></div>
+            <div class="card" style="border-left-color: var(--action)">
+                <span class="card-title">Camera Setting</span>
+                FPS: <span class="val">${state.fps}</span> | WB: <span class="val">${state.wb}</span><br>
+                OTTURATORE: <span class="val">${ott}</span>
+            </div>
+            <div class="card" style="border-left-color: var(--warn)">
+                <span class="card-title">Esposizione (${state.iso})</span>
+                ${state.iso === 'ISO Manuale' ? 
+                    `ISO: <span class="val">100</span>
+                    <div class="instruction-box">
+                        • <b>ISO MANUALE</b><br>
+                        • <b>MM>+0.3(sovraesposizione)</b>: Monta ND più alto o aumenta leggermente FPS.<br>
+                        • <b>MM<-0.3(sottoesposizione)</b>: Monta ND più basso o aumenta ISO.<br>
+                        • <span style="color:#52ffad;">Target: MM tra -0.3 e 0.0</span>
+                    </div>` : 
+                    `<div class=\"instruction-box\"><b>ISO AUTO</b> (Max 200) | <b>EV: -0.3</b></div>`}
+            </div>
+            <div class="card" style="border-left-color: var(--target); background: rgba(56, 189, 248, 0.05);">
+                <span class="card-title">Fondamentale</span>
+                <b>🔒 BLOCCO AE:</b>
+                <div class="instruction-box">Punta l'area più chiara della scena e blocca l'esposizione (lucchetto) per evitare sfarfallii. In ogni modo controlla l'istogramma che sia tutto concentrato nella parte centrale prima del blocco</div>
+            </div>
+        `;
     }
-    
-    setInterval(tick, 1000);
-    tick();
-    updateSmart();
 </script>
-
 </body>
 </html>
