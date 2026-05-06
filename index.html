@@ -24,6 +24,7 @@
         .path-display { font-size: 0.75rem; color: var(--target); background: rgba(56, 189, 248, 0.1); padding: 12px 16px; border-radius: 10px; margin-top: 12px; border-left: 4px solid var(--target); min-height: 1.2em; line-height: 1.4; }
         .nav-btn-circle { width: 48px; height: 48px; border-radius: 50%; background: #21262d; border: 1px solid #30363d; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; }
         h1 { color: var(--accent); font-size: 1rem; text-transform: uppercase; margin: 0; font-weight: 900; letter-spacing: 1px; }
+        .version-tag { font-size: 0.6rem; color: #8b949e; opacity: 0.6; margin-top: 2px; }
         .btn { display: block; width: 100%; padding: 24px; margin: 14px 0; background: var(--card); border: 1px solid #30363d; border-radius: 22px; color: #fff; font-size: 1.1rem; text-align: left; position: relative; box-sizing: border-box; cursor: pointer; transition: transform 0.1s; }
         .btn:active { transform: scale(0.98); }
         .btn-smart { border: 2.5px solid var(--smart) !important; background: rgba(0, 242, 255, 0.05) !important; }
@@ -85,7 +86,13 @@
 
     <div id="screen-env" class="screen active">
         <div class="nav-header">
-            <div class="nav-top-row"><h1>1. Ambiente</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
+            <div class="nav-top-row">
+                <div style="display: flex; flex-direction: column;">
+                    <h1>1. Ambiente</h1>
+                    <span class="version-tag">v106 Astro-Season</span>
+                </div>
+                <button class="nav-btn-circle" onclick="resetApp()">🏠</button>
+            </div>
             <div id="path-display-main" class="path-display">Scegli la condizione di luce o usa i sensori sopra.</div>
         </div>
         <button class="btn" id="btn-sole" onclick="setStep('env', 'Sole Forte', 'screen-wb-sole')">☀️ SOLE PIENO / ZENIT</button>
@@ -242,13 +249,16 @@
 
     function applySuggestedLux() {
         const sugg = (new Date().getMonth() >= 5 && new Date().getMonth() <= 7) ? 215 : 195;
-        state.soleRef = sugg; document.getElementById('manual-lux-input').value = sugg; updateSmart();
+        state.soleRef = sugg; 
+        document.getElementById('manual-lux-input').value = sugg; 
+        updateSmart();
     }
 
     function updateSmart() {
-        // Ripristino logica Suggerimento
+        // Ripristino e aggiornamento Suggerimento
         const suggVal = (new Date().getMonth() >= 5 && new Date().getMonth() <= 7) ? 215 : 195;
-        document.getElementById('suggerimento-local').innerText = `Suggerimento: ${suggVal}`;
+        const suggEl = document.getElementById('suggerimento-local');
+        if (suggEl) suggEl.innerText = `Suggerimento: ${suggVal}`;
 
         document.querySelectorAll('.btn-smart').forEach(x => x.classList.remove('btn-smart'));
         document.querySelectorAll('.smart-label-container').forEach(x => x.remove());
@@ -288,6 +298,7 @@
         state = { soleRef: state.soleRef };
         historyStack = [{id: 'screen-env', state: state}];
         showScreen('screen-env'); updatePath();
+        updateSmart();
     }
 
     function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
@@ -368,8 +379,9 @@
         document.getElementById('hero-date').innerText = now.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase();
         document.getElementById('hero-time').innerText = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
     }
-    setInterval(updateHero, 1000); updateHero();
-    updateSmart(); // Chiamata iniziale per mostrare subito il suggerimento
+    setInterval(updateHero, 1000); 
+    updateHero();
+    updateSmart(); // Inizializzazione cruciale per mostrare il suggerimento subito
 </script>
 </body>
 </html>
