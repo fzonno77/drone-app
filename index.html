@@ -13,7 +13,6 @@
         .hero-main { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
         .hero-weather { font-size: 5.5rem; margin-bottom: 10px; filter: drop-shadow(0 0 25px rgba(222, 255, 154, 0.4)); }
         .hero-time { font-size: 3.8rem; font-weight: 900; color: var(--text); letter-spacing: -2px; }
-        /* Aggiunta Versione */
         .hero-v { font-size: 0.7rem; color: var(--accent); font-weight: 800; letter-spacing: 3px; margin-top: 10px; opacity: 0.8; }
         
         .sensor-panel { background: rgba(0, 242, 255, 0.05); border: 1px solid var(--smart); border-radius: 20px; padding: 15px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
@@ -48,8 +47,8 @@
         .sim-preview-box { margin-top: 15px; background: #000; border-radius: 20px; overflow: hidden; border: 1px solid #333; position: relative; }
         #sim-img { width: 100%; height: 180px; object-fit: cover; transition: 0.3s; filter: brightness(1) sepia(0); }
         .sim-tools { padding: 12px; background: var(--card); }
-        .sim-row { display: flex; gap: 5px; margin-bottom: 8px; flex-wrap: wrap; }
-        .btn-sim { flex: 1; min-width: 60px; padding: 10px 2px; font-size: 0.6rem; font-weight: bold; border-radius: 8px; border: 1px solid #444; background: #0b0e14; color: #fff; cursor: pointer; text-align: center; }
+        .sim-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 8px; }
+        .btn-sim { padding: 10px 2px; font-size: 0.6rem; font-weight: bold; border-radius: 8px; border: 1px solid #444; background: #0b0e14; color: #fff; cursor: pointer; text-align: center; }
         .btn-sim.active { background: var(--smart); color: #000; border-color: var(--smart); }
         .sim-title { font-size: 0.6rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
     </style>
@@ -177,7 +176,7 @@
 <canvas id="photo-canvas" style="display:none;"></canvas>
 
 <script>
-    let state = { soleRef: parseFloat(localStorage.getItem('soleRef')) || 180, lat: 41.11, lon: 16.87, currentB: 1, currentS: 0 };
+    let state = { soleRef: parseFloat(localStorage.getItem('soleRef')) || 180, lat: 41.11, lon: 16.87, currentB: 1, currentS: 0, currentND_name: "" };
     let historyStack = [{id: 'screen-env', state: {}}];
     let photoLux = 0;
     let colorTone = "neutral";
@@ -194,7 +193,8 @@
     function updateSuggestionUI() {
         const sugg = getSuggestedLux();
         const loc = (state.lat > 41 && state.lat < 41.2) ? "Bari" : "Località";
-        document.getElementById('suggerimento-local').innerText = `Sugg. Maggio/${loc}: ${sugg} LUX`;
+        const sugEl = document.getElementById('suggerimento-local');
+        if(sugEl) sugEl.innerText = `Sugg. Maggio/${loc}: ${sugg} LUX`;
     }
 
     function manualCalibrate() {
@@ -230,15 +230,16 @@
     }
 
     function startGPS() {
-        document.getElementById('gps-label').innerText = "RICERCA SATELLITI...";
+        const label = document.getElementById('gps-label');
+        if(label) label.innerText = "RICERCA SATELLITI...";
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((pos) => {
                 state.lat = pos.coords.latitude; state.lon = pos.coords.longitude;
                 sunElevation = calculateSunElevation();
-                document.getElementById('gps-label').innerText = `GPS OK | ELEVAZIONE: ${Math.round(sunElevation)}°`;
+                if(label) label.innerText = `GPS OK | ELEVAZIONE: ${Math.round(sunElevation)}°`;
                 updateSuggestionUI();
                 updateSmart();
-            }, (err) => { document.getElementById('gps-label').innerText = "GPS DISATTIVATO"; }, { enableHighAccuracy: true });
+            }, (err) => { if(label) label.innerText = "GPS DISATTIVATO"; }, { enableHighAccuracy: true });
         }
     }
 
@@ -270,7 +271,8 @@
                 let ratio = (rTotal / bTotal);
                 colorTone = ratio > 1.25 ? "warm" : (ratio < 0.85 ? "cold" : "neutral");
                 sunElevation = calculateSunElevation();
-                document.getElementById('gps-label').innerText = `LUX: ${Math.round(photoLux)} | ELEV: ${Math.round(sunElevation)}° | ${colorTone.toUpperCase()}`;
+                const label = document.getElementById('gps-label');
+                if(label) label.innerText = `LUX: ${Math.round(photoLux)} | ELEV: ${Math.round(sunElevation)}° | ${colorTone.toUpperCase()}`;
                 updateSmart();
             };
             img.src = e.target.result;
@@ -280,11 +282,15 @@
 
     function updateHero() {
         const now = new Date();
-        document.getElementById('hero-date').innerText = now.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase();
-        document.getElementById('hero-time').innerText = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-        const h = now.getHours();
+        const dateEl = document.getElementById('hero-date');
+        const timeEl = document.getElementById('hero-time');
         const icon = document.getElementById('hero-weather');
-        if (h >= 20 || h < 6) icon.innerText = "🌙"; else if (h >= 6 && h < 10) icon.innerText = "🌅"; else if (h >= 18 && h < 20) icon.innerText = "🌇"; else icon.innerText = "☀️";
+        if(dateEl) dateEl.innerText = now.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase();
+        if(timeEl) timeEl.innerText = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+        const h = now.getHours();
+        if(icon) {
+            if (h >= 20 || h < 6) icon.innerText = "🌙"; else if (h >= 6 && h < 10) icon.innerText = "🌅"; else if (h >= 18 && h < 20) icon.innerText = "🌇"; else icon.innerText = "☀️";
+        }
     }
     setInterval(updateHero, 1000); updateHero();
     updateSuggestionUI();
@@ -338,7 +344,7 @@
 
     function resetApp() { 
         let currentRef = state.soleRef; let currentLat = state.lat; let currentLon = state.lon;
-        state = { soleRef: currentRef, lat: currentLat, lon: currentLon, currentB: 1, currentS: 0 }; 
+        state = { soleRef: currentRef, lat: currentLat, lon: currentLon, currentB: 1, currentS: 0, currentND_name: "" }; 
         historyStack = [{id: 'screen-env', state: state}]; 
         showScreen('screen-env'); updatePath(); updateSmart(); 
     }
@@ -353,14 +359,16 @@
     }
 
     /* Logica Simulatore Preview */
-    function simND(val, btn) {
+    function simND(val, name, btn) {
         state.currentB = val;
+        state.currentND_name = name;
         applySim();
         document.querySelectorAll('.nd-grp').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
     }
-    function simWB(s, btn) {
+    function simWB(s, name, btn) {
         state.currentS = s;
+        state.wb = name;
         applySim();
         document.querySelectorAll('.wb-grp').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -368,16 +376,26 @@
     function applySim() {
         const img = document.getElementById('sim-img');
         if(!img) return;
+        // Mappatura semplificata del tono basata sui Kelvin per la preview
         img.style.filter = `brightness(${state.currentB}) sepia(${state.currentS})`;
     }
 
     function render() {
-        let nd = "ND32"; let ref = state.soleRef;
+        let nd = "ND32";
         if (state.env === 'Sole Forte') nd = (state.goal === 'Cinema') ? "ND128" : "ND64";
         else if (state.env === 'Luce di Taglio') nd = "ND32";
         else if (state.env === 'Alba/Tramonto') nd = "ND16";
         else if (state.env === 'Nuvoloso') nd = "ND8";
         else if (state.env === 'Notte') nd = "NESSUNO";
+
+        // Sincronizzazione automatica simulatore con parametri calcolati
+        const ndVal = nd === "ND128" ? 0.15 : (nd === "ND64" ? 0.3 : (nd === "ND32" ? 0.45 : (nd === "ND16" ? 0.6 : (nd === "ND8" ? 0.8 : 1))));
+        state.currentB = ndVal;
+        state.currentND_name = nd;
+        
+        // Mappatura WB per simulatore
+        const wbMap = {"2800K": 0.8, "3200K": 0.6, "4500K": 0.3, "5000K": 0.1, "5500K": 0, "6000K": 0.2, "6500K": 0.3, "8000K": 0.5};
+        state.currentS = wbMap[state.wb] || 0;
 
         const ott = (state.goal === 'Cinema') ? `1/${state.fps * 2}s` : `FLUIDO (>1/${state.fps * 4}s)`;
         const placeholderImg = "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80";
@@ -388,17 +406,28 @@
                 <div class="sim-tools">
                     <div class="sim-title">Test Filtro ND</div>
                     <div class="sim-row">
-                        <button class="btn-sim nd-grp active" onclick="simND(1, this)">OFF</button>
-                        <button class="btn-sim nd-grp" onclick="simND(0.6, this)">ND16</button>
-                        <button class="btn-sim nd-grp" onclick="simND(0.3, this)">ND64</button>
-                        <button class="btn-sim nd-grp" onclick="simND(0.15, this)">ND128</button>
+                        <button class="btn-sim nd-grp ${nd==='NESSUNO'?'active':''}" onclick="simND(1, 'NESSUNO', this)">OFF</button>
+                        <button class="btn-sim nd-grp ${nd==='ND8'?'active':''}" onclick="simND(0.8, 'ND8', this)">ND8</button>
+                        <button class="btn-sim nd-grp ${nd==='ND16'?'active':''}" onclick="simND(0.6, 'ND16', this)">ND16</button>
+                        <button class="btn-sim nd-grp ${nd==='ND32'?'active':''}" onclick="simND(0.45, 'ND32', this)">ND32</button>
                     </div>
+                    <div class="sim-row">
+                        <button class="btn-sim nd-grp ${nd==='ND64'?'active':''}" onclick="simND(0.3, 'ND64', this)">ND64</button>
+                        <button class="btn-sim nd-grp ${nd==='ND128'?'active':''}" onclick="simND(0.15, 'ND128', this)">ND128</button>
+                    </div>
+                    
                     <div class="sim-title">Test Bilanciamento (K)</div>
                     <div class="sim-row">
-                        <button class="btn-sim wb-grp" onclick="simWB(0.6, this)">3200K</button>
-                        <button class="btn-sim wb-grp active" onclick="simWB(0, this)">5500K</button>
-                        <button class="btn-sim wb-grp" onclick="simWB(0.2, this)">6500K</button>
-                        <button class="btn-sim wb-grp" onclick="simWB(0.4, this)">8000K</button>
+                        <button class="btn-sim wb-grp ${state.wb==='2800K'?'active':''}" onclick="simWB(0.8, '2800K', this)">2800K</button>
+                        <button class="btn-sim wb-grp ${state.wb==='3200K'?'active':''}" onclick="simWB(0.6, '3200K', this)">3200K</button>
+                        <button class="btn-sim wb-grp ${state.wb==='4500K'?'active':''}" onclick="simWB(0.3, '4500K', this)">4500K</button>
+                        <button class="btn-sim wb-grp ${state.wb==='5000K'?'active':''}" onclick="simWB(0.1, '5000K', this)">5000K</button>
+                    </div>
+                    <div class="sim-row">
+                        <button class="btn-sim wb-grp ${state.wb==='5500K'?'active':''}" onclick="simWB(0, '5500K', this)">5500K</button>
+                        <button class="btn-sim wb-grp ${state.wb==='6000K'?'active':''}" onclick="simWB(0.2, '6000K', this)">6000K</button>
+                        <button class="btn-sim wb-grp ${state.wb==='6500K'?'active':''}" onclick="simWB(0.3, '6500K', this)">6500K</button>
+                        <button class="btn-sim wb-grp ${state.wb==='8000K'?'active':''}" onclick="simWB(0.5, '8000K', this)">8000K</button>
                     </div>
                 </div>
             </div>
@@ -427,6 +456,7 @@
                 <div class="instruction-box">Punta l'area più chiara della scena e blocca l'esposizione (lucchetto) per evitare sfarfallii. In ogni modo controlla l'istogramma che sia tutto concentrato nella parte centrale prima del blocco</div>
             </div>
         `;
+        applySim();
     }
 </script>
 </body>
