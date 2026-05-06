@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>DJI Mini 5 Pro - Pro Setup v105 (Astro-Smart)</title>
-    <!-- Stili CSS originali totalmente invariati -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚁</text></svg>">
     <style>
         :root { --bg: #05070b; --card: #161b22; --accent: #deff9a; --text: #f0f6fc; --warn: #ffab70; --target: #38bdf8; --smart: #00f2ff; --action: #c084fc; }
@@ -62,7 +61,6 @@
         </div>
     </div>
 
-    <!-- Schermate originali invariate -->
     <div id="screen-env" class="screen active">
         <div class="nav-header">
             <div class="nav-top-row"><h1>1. Ambiente</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -250,13 +248,13 @@
         sunElevation = calculateSunElevation();
 
         if (!state.env) {
-            // LOGICA INTELLIGENTE PER IL NUVOLOSO[cite: 2]
-            if (photoLux > 0 && photoLux < ref * 0.6 && sunElevation > 10) {
+            // LOGICA NUVOLOSO AGGIORNATA PER SENSIBILITÀ CORPOSA[cite: 1, 2]
+            if (photoLux > 0 && photoLux < ref * 0.65 && sunElevation > 10) {
                 applySmart('btn-nuvoloso');
             } else if (sunElevation > 35) {
                 applySmart('btn-sole');
             } else if (sunElevation > 12) {
-                applySmart('btn-taglio'); // Luce di Taglio
+                applySmart('btn-taglio');
             } else if (sunElevation > -6) {
                 applySmart('btn-alba');
             } else { applySmart('btn-notte'); }
@@ -287,7 +285,6 @@
         }
     }
 
-    // RESET TOTALE CON PULIZIA VARIABILI FISICHE
     function resetApp() { 
         let currentRef = state.soleRef; let currentLat = state.lat; let currentLon = state.lon;
         photoLux = 0; colorTone = "neutral";
@@ -312,14 +309,19 @@
         let nd = "ND32"; let ref = state.soleRef;
         let baseLux = photoLux > 0 ? photoLux : (state.env === 'Sole Forte' ? ref : ref/4);
 
-        // LOGICA ND OTTIMIZZATA PER LUCE DI TAGLIO
+        // INTEGRAZIONE FILTRO NESSUNO PER NUVOLOSO CORPOSO[cite: 1, 2]
         if (state.env === 'Sole Forte' || (state.env !== 'Alba/Tramonto' && baseLux > ref * 0.85)) {
             nd = (state.goal === 'Cinema') ? "ND128" : "ND64";
         } else if (state.env === 'Luce di Taglio') {
             nd = (baseLux > ref * 0.6) ? "ND64" : "ND32";
-        } else if (state.env === 'Alba/Tramonto') nd = "ND16";
-        else if (state.env === 'Nuvoloso') nd = "ND8";
-        else if (state.env === 'Notte') nd = "NESSUNO";
+        } else if (state.env === 'Alba/Tramonto') {
+            nd = "ND16";
+        } else if (state.env === 'Nuvoloso') {
+            // Se la luce è meno del 25% del riferimento sole, suggerisce di togliere il filtro[cite: 1, 2]
+            nd = (photoLux > 0 && photoLux < ref * 0.25) ? "NESSUNO (CLEAR)" : "ND8";
+        } else if (state.env === 'Notte') {
+            nd = "NESSUNO";
+        }
 
         const luxFeedback = `<div style="font-size:0.75rem; color:var(--smart); margin-bottom:12px; font-weight:bold; letter-spacing:1px;">📊 ANALISI FISICA: ${Math.round(photoLux)} LUX | SOLE: ${Math.round(sunElevation)}°</div>`;
         const ott = (state.goal === 'Cinema') ? `1/${state.fps * 2}s` : `FLUIDO (>1/${state.fps * 4}s)`;
