@@ -41,7 +41,7 @@
         .manual-input-row input { flex: 2; background: #000; border: 1px solid var(--smart); color: #fff; padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; }
         .manual-input-row button { flex: 1; background: var(--smart); border: none; color: #000; border-radius: 8px; font-weight: 900; font-size: 0.7rem; cursor: pointer; }
 
-        /* Stili Anteprima (Aggiunti per funzionalità definita) */
+        /* Stili Anteprima */
         .preview-box { width: 100%; height: 180px; border-radius: 18px; overflow: hidden; background: #000; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); }
         #preview-img-final { width: 100%; height: 100%; object-fit: cover; transition: filter 0.4s; }
         .console-row { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 12px 0; scrollbar-width: none; }
@@ -181,7 +181,6 @@
     let photoLux = 0;
     let base64Photo = "";
 
-    // Mappe filtri per Anteprima
     const WB_FILTERS = {
         '2800K': "brightness(1.1) hue-rotate(180deg) saturate(1.2)",
         '3200K': "hue-rotate(160deg) saturate(1.1)",
@@ -247,6 +246,10 @@
     }
 
     function updateSmart() {
+        // Ripristino logica Suggerimento
+        const suggVal = (new Date().getMonth() >= 5 && new Date().getMonth() <= 7) ? 215 : 195;
+        document.getElementById('suggerimento-local').innerText = `Suggerimento: ${suggVal}`;
+
         document.querySelectorAll('.btn-smart').forEach(x => x.classList.remove('btn-smart'));
         document.querySelectorAll('.smart-label-container').forEach(x => x.remove());
         if (state.env === 'Notte') applySmart('wb-2800-n');
@@ -366,6 +369,7 @@
         document.getElementById('hero-time').innerText = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
     }
     setInterval(updateHero, 1000); updateHero();
+    updateSmart(); // Chiamata iniziale per mostrare subito il suggerimento
 </script>
 </body>
 </html>
