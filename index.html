@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>DJI Mini 5 Pro - Pro Setup v106 (Astro-Season)</title>
+    <title>DJI Mini 5 Pro - Pro Setup v107</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚁</text></svg>">
     <style>
         :root { --bg: #05070b; --card: #161b22; --accent: #deff9a; --text: #f0f6fc; --warn: #ffab70; --target: #38bdf8; --smart: #00f2ff; --action: #c084fc; }
@@ -24,7 +24,10 @@
         .path-display { font-size: 0.75rem; color: var(--target); background: rgba(56, 189, 248, 0.1); padding: 12px 16px; border-radius: 10px; margin-top: 12px; border-left: 4px solid var(--target); min-height: 1.2em; line-height: 1.4; }
         .nav-btn-circle { width: 48px; height: 48px; border-radius: 50%; background: #21262d; border: 1px solid #30363d; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; }
         h1 { color: var(--accent); font-size: 1rem; text-transform: uppercase; margin: 0; font-weight: 900; letter-spacing: 1px; }
-        .version-tag { font-size: 0.6rem; color: #8b949e; opacity: 0.6; margin-top: 2px; }
+        
+        /* Versione Software */
+        .version-label { font-size: 0.6rem; color: #8b949e; font-weight: bold; opacity: 0.7; }
+
         .btn { display: block; width: 100%; padding: 24px; margin: 14px 0; background: var(--card); border: 1px solid #30363d; border-radius: 22px; color: #fff; font-size: 1.1rem; text-align: left; position: relative; box-sizing: border-box; cursor: pointer; transition: transform 0.1s; }
         .btn:active { transform: scale(0.98); }
         .btn-smart { border: 2.5px solid var(--smart) !important; background: rgba(0, 242, 255, 0.05) !important; }
@@ -37,17 +40,21 @@
         .val { color: #ffff00; font-weight: 900; font-family: sans-serif; font-size: 1.6rem; }
         .instruction-box { margin-top: 18px; padding: 20px; background: #1a1a1a; border-radius: 18px; font-size: 1.2rem; line-height: 1.6; color: #ffffff; border: 2px solid #ffff00; font-weight: bold; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
         .manual-box { width: 100%; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 12px; border: 1px solid rgba(0,242,255,0.2); margin-top: 5px; box-sizing: border-box; }
         .manual-input-row { display: flex; gap: 8px; margin-top: 8px; }
         .manual-input-row input { flex: 2; background: #000; border: 1px solid var(--smart); color: #fff; padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; }
         .manual-input-row button { flex: 1; background: var(--smart); border: none; color: #000; border-radius: 8px; font-weight: 900; font-size: 0.7rem; cursor: pointer; }
 
-        /* Stili Anteprima */
+        /* Stili Anteprima e Console Risultati */
         .preview-box { width: 100%; height: 180px; border-radius: 18px; overflow: hidden; background: #000; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); }
         #preview-img-final { width: 100%; height: 100%; object-fit: cover; transition: filter 0.4s; }
+        
+        /* Griglia Console WB per evitare lo scroll orizzontale */
+        .console-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 4px 0 12px 0; }
         .console-row { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 12px 0; scrollbar-width: none; }
         .console-row::-webkit-scrollbar { display: none; }
-        .console-btn { flex-shrink: 0; background: #21262d; border: 1px solid #30363d; color: #fff; padding: 8px 12px; border-radius: 10px; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
+        .console-btn { background: #21262d; border: 1px solid #30363d; color: #fff; padding: 10px 8px; border-radius: 10px; font-size: 0.65rem; font-weight: bold; cursor: pointer; text-align: center; }
         .active-opt { border-color: var(--smart); background: rgba(0, 242, 255, 0.1); color: var(--smart); }
     </style>
 </head>
@@ -89,7 +96,7 @@
             <div class="nav-top-row">
                 <div style="display: flex; flex-direction: column;">
                     <h1>1. Ambiente</h1>
-                    <span class="version-tag">v106 Astro-Season</span>
+                    <span class="version-label">v107 Astro-Season</span>
                 </div>
                 <button class="nav-btn-circle" onclick="resetApp()">🏠</button>
             </div>
@@ -249,13 +256,10 @@
 
     function applySuggestedLux() {
         const sugg = (new Date().getMonth() >= 5 && new Date().getMonth() <= 7) ? 215 : 195;
-        state.soleRef = sugg; 
-        document.getElementById('manual-lux-input').value = sugg; 
-        updateSmart();
+        state.soleRef = sugg; document.getElementById('manual-lux-input').value = sugg; updateSmart();
     }
 
     function updateSmart() {
-        // Ripristino e aggiornamento Suggerimento
         const suggVal = (new Date().getMonth() >= 5 && new Date().getMonth() <= 7) ? 215 : 195;
         const suggEl = document.getElementById('suggerimento-local');
         if (suggEl) suggEl.innerText = `Suggerimento: ${suggVal}`;
@@ -297,8 +301,7 @@
         photoLux = 0; base64Photo = "";
         state = { soleRef: state.soleRef };
         historyStack = [{id: 'screen-env', state: state}];
-        showScreen('screen-env'); updatePath();
-        updateSmart();
+        showScreen('screen-env'); updatePath(); updateSmart();
     }
 
     function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
@@ -339,7 +342,7 @@
                     ${['NESSUNO','ND8','ND16','ND32','ND64','ND128'].map(n => `<button class="console-btn btn-nd-live" onclick="state.currentNd='${n}'; refreshPreview();">${n}</button>`).join('')}
                 </div>
                 <div style="font-size:0.6rem; color:#8b949e; text-transform:uppercase; font-weight:bold; margin-bottom:4px; margin-top:5px;">Test WB</div>
-                <div class="console-row">
+                <div class="console-grid">
                     ${Object.keys(WB_FILTERS).map(k => `<button class="console-btn btn-wb-live" onclick="state.wb='${k}'; refreshPreview();">${k}</button>`).join('')}
                 </div>
             </div>
@@ -381,7 +384,7 @@
     }
     setInterval(updateHero, 1000); 
     updateHero();
-    updateSmart(); // Inizializzazione cruciale per mostrare il suggerimento subito
+    updateSmart();
 </script>
 </body>
 </html>
