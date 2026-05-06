@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>DJI Mini 5 Pro - Pro Setup v105 (Astro-Smart)</title>
+    <title>DJI Mini 5 Pro - Pro Setup v106 (Astro-Season)</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚁</text></svg>">
     <style>
         :root { --bg: #05070b; --card: #161b22; --accent: #deff9a; --text: #f0f6fc; --warn: #ffab70; --target: #38bdf8; --smart: #00f2ff; --action: #c084fc; }
@@ -36,8 +36,6 @@
         .instruction-box { margin-top: 18px; padding: 20px; background: #1a1a1a; border-radius: 18px; font-size: 1.2rem; line-height: 1.6; color: #ffffff; border: 2px solid #ffff00; font-weight: bold; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .btn-tara { background: transparent; border: 1px dashed var(--accent); color: var(--accent); font-size: 0.6rem; padding: 5px; border-radius: 8px; cursor: pointer; margin-top: 5px; text-transform: uppercase; }
-        
-        /* Nuovi stili per taratura manuale */
         .manual-box { width: 100%; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 12px; border: 1px solid rgba(0,242,255,0.2); margin-top: 5px; box-sizing: border-box; }
         .manual-input-row { display: flex; gap: 8px; margin-top: 8px; }
         .manual-input-row input { flex: 2; background: #000; border: 1px solid var(--smart); color: #fff; padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; }
@@ -63,8 +61,6 @@
                 📸 ANALISI AMBIENTE
                 <input id="input-foto" type="file" accept="image/*" capture="environment" style="display:none" onchange="analyzePhoto(event)">
             </label>
-            
-            <!-- Box Taratura Manuale e Suggerimenti -->
             <div class="manual-box">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-size: 0.65rem; color: #8b949e; text-transform: uppercase;">Taratura Manuale</span>
@@ -76,12 +72,10 @@
                 </div>
                 <button onclick="applySuggestedLux()" style="width: 100%; margin-top: 8px; background: transparent; border: 1px dashed var(--accent); color: var(--accent); padding: 6px; border-radius: 6px; font-size: 0.6rem; cursor: pointer;">APPLICA VALORE CONSIGLIATO</button>
             </div>
-
             <button class="btn-tara" style="width:100%" onclick="calibrateSole()">🎯 TARATURA DA FOTO (Imposta riferimento attuale)</button>
         </div>
     </div>
 
-    <!-- Schermate originali invariate -->
     <div id="screen-env" class="screen active">
         <div class="nav-header">
             <div class="nav-top-row"><h1>1. Ambiente</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -94,6 +88,7 @@
         <button class="btn" id="btn-notte" onclick="setStep('env', 'Notte', 'screen-wb-night')">🌙 NOTTE / CITTÀ</button>
     </div>
 
+    <!-- Pagine Bilanciamento Bianco -->
     <div id="screen-wb-sole" class="screen">
         <div class="nav-header">
             <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -102,7 +97,6 @@
         <button class="btn" id="wb-5500-s" onclick="setStep('wb', '5500K', 'screen-goal')">☀️ GIORNO STANDARD (5500K)</button>
         <button class="btn" id="wb-6000-s" onclick="setStep('wb', '6000K', 'screen-goal')">☀️ LUCE LEGGERMENTE CALDA (6000K)</button>
     </div>
-
     <div id="screen-wb-alba" class="screen">
         <div class="nav-header">
             <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -111,7 +105,6 @@
         <button class="btn" id="wb-5500-a" onclick="setStep('wb', '5500K', 'screen-goal')">🌅 ESALTA COLORI CALDI (5500K)</button>
         <button class="btn" id="wb-3200-a" onclick="setStep('wb', '3200K', 'screen-goal')">🌅 BILANCIA / NEUTRALIZZA (3200K)</button>
     </div>
-
     <div id="screen-wb-cloud" class="screen">
         <div class="nav-header">
             <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -120,7 +113,6 @@
         <button class="btn" id="wb-6500-c" onclick="setStep('wb', '6500K', 'screen-goal')">☁️ OMBRA PROFONDA (6500K)</button>
         <button class="btn" id="wb-6000-c" onclick="setStep('wb', '6000K', 'screen-goal')">⛅ NUVOLOSO (6000K)</button>
     </div>
-
     <div id="screen-wb-night" class="screen">
         <div class="nav-header">
             <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>2. Bilanciamento Bianco</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -131,6 +123,7 @@
         <button class="btn" id="wb-5000-n" onclick="setStep('wb', '5000K', 'screen-goal')">🌑 BUIO TOTALE (5000K)</button>
     </div>
 
+    <!-- Pagine Stile e FPS -->
     <div id="screen-goal" class="screen">
         <div class="nav-header">
             <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>3. Stile</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -139,7 +132,6 @@
         <button class="btn" id="goal-cinema" onclick="setStep('goal', 'Cinema', 'screen-fps')">🎬 CINEMA (Motion Blur)</button>
         <button class="btn" id="goal-sport" onclick="setStep('goal', 'Sport', 'screen-fps')">🏎️ SPORT (Nitido)</button>
     </div>
-
     <div id="screen-fps" class="screen">
         <div class="nav-header">
             <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>4. FPS</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -153,7 +145,6 @@
             <button class="btn btn-fps" id="fps-60" onclick="setStep('fps', '60', 'screen-iso')">60</button>
         </div>
     </div>
-
     <div id="screen-iso" class="screen">
         <div class="nav-header">
             <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>5. Gestione ISO</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -162,7 +153,6 @@
         <button class="btn" id="iso-manual" onclick="setStep('iso', 'ISO Manuale', 'screen-res')">🔧 ISO MANUALE</button>
         <button class="btn" id="iso-auto" onclick="setStep('iso', 'ISO Automatico', 'screen-res')">🤖 ISO AUTOMATICA</button>
     </div>
-
     <div id="screen-res" class="screen">
         <div class="nav-header">
             <div class="nav-top-row"><button class="nav-btn-circle" onclick="goBack()">←</button><h1>Setup Finale</h1><button class="nav-btn-circle" onclick="resetApp()">🏠</button></div>
@@ -182,13 +172,11 @@
     let colorTone = "neutral";
     let sunElevation = 0;
 
-    // Logica di suggerimento specifica per Bari - Maggio[cite: 1, 2]
     function getSuggestedLux() {
         const mese = new Date().getMonth();
-        // Bari a Maggio: valore soleggiato tipico[cite: 1]
         if (state.lat > 40 && state.lat < 42 && mese === 4) return 195;
-        if (mese >= 5 && mese <= 7) return 215; // Estate piena
-        return 175; // Altri periodi
+        if (mese >= 5 && mese <= 7) return 215;
+        return 175;
     }
 
     function updateSuggestionUI() {
@@ -286,7 +274,7 @@
         if (h >= 20 || h < 6) icon.innerText = "🌙"; else if (h >= 6 && h < 10) icon.innerText = "🌅"; else if (h >= 18 && h < 20) icon.innerText = "🌇"; else icon.innerText = "☀️";
     }
     setInterval(updateHero, 1000); updateHero();
-    updateSuggestionUI(); // Inizializza suggerimento
+    updateSuggestionUI();
 
     function applySmart(id) {
         const el = document.getElementById(id);
@@ -305,16 +293,25 @@
         sunElevation = calculateSunElevation();
 
         if (!state.env) {
-            // Logica intelligente basata su soglie fisiche e astronomiche[cite: 2]
-            if (photoLux > 0 && photoLux < ref * 0.65 && sunElevation > 10) {
-                applySmart('btn-nuvoloso');
-            } else if (sunElevation > 35) {
-                applySmart('btn-sole');
-            } else if (sunElevation > 12) {
-                applySmart('btn-taglio');
-            } else if (sunElevation > -6) {
+            // NUOVA LOGICA ASTRO-SEASON[cite: 1, 2]
+            if (sunElevation > 10) { 
+                // È GIORNO: Blocca "Notte", valuta solo luce o nuvole
+                if (photoLux > 0 && photoLux < ref * 0.65) {
+                    applySmart('btn-nuvoloso');
+                } else if (sunElevation > 35) {
+                    applySmart('btn-sole');
+                } else {
+                    applySmart('btn-taglio');
+                }
+            } 
+            else if (sunElevation > -2) { 
+                // CREPUSCOLO: Alba/Tramonto
                 applySmart('btn-alba');
-            } else { applySmart('btn-notte'); }
+            } 
+            else { 
+                // È NOTTE: Solo ora suggerisce Notte
+                applySmart('btn-notte');
+            }
         }
         
         if (state.env === 'Sole Forte' || state.env === 'Luce di Taglio') applySmart(colorTone === "warm" ? 'wb-6000-s' : 'wb-5500-s');
