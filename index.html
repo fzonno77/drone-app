@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>DJI Mini 5 Pro - Pro Setup v106 (Astro-Season)</title>
+    <title>DJI Mini 5 Pro - Pro Setup v113 (Lux-Fix)</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚁</text></svg>">
     <style>
         :root { --bg: #05070b; --card: #161b22; --accent: #deff9a; --text: #f0f6fc; --warn: #ffab70; --target: #38bdf8; --smart: #00f2ff; --action: #c084fc; }
@@ -60,7 +60,7 @@
     <div class="hero-main">
         <div id="hero-weather" class="hero-weather">☀️</div>
         <div id="hero-time" class="hero-time">00:00</div>
-        <div class="hero-v">v112 PRO-SIM</div>
+        <div class="hero-v">v113 PRO-SIM</div>
     </div>
 </div>
 
@@ -252,6 +252,7 @@
         } else { alert("Analizza prima una foto in piena luce!"); }
     }
 
+    // RIPRISTINO FORMULA ORIGINALE (MEDIA SEMPLICE) CON CORREZIONE SCALA
     function analyzePhoto(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -265,11 +266,26 @@
                 ctx.drawImage(img, 0, 0, 100, 100);
                 userImgData = e.target.result;
                 const data = ctx.getImageData(0,0,100,100).data;
-                let brightness = 0, rTotal = 0, bTotal = 0;
-                for(let i=0; i<data.length; i+=4) { brightness += (data[i]+data[i+1]+data[i+2])/3; rTotal += data[i]; bTotal += data[i+2]; }
-                photoLux = brightness / 2500;
+                
+                let brightnessSum = 0, rTotal = 0, bTotal = 0;
+                for(let i=0; i<data.length; i+=4) { 
+                    // Formula media semplice: (R+G+B)/3
+                    brightnessSum += (data[i]+data[i+1]+data[i+2])/3; 
+                    rTotal += data[i]; 
+                    bTotal += data[i+2]; 
+                }
+
+                // Calcolo della luminosità media dei pixel (da 0 a 255)
+                let avgPixelValue = brightnessSum / (canvas.width * canvas.height);
+                
+                // RIPRISTINO: Usiamo un moltiplicatore che riporti i 255 pixel max 
+                // verso la scala 200/220. Se all'alba era 420, con questo 0.85
+                // diventerà un valore molto più basso e corretto.
+                photoLux = avgPixelValue * 0.85; 
+
                 let ratio = (rTotal / bTotal);
                 colorTone = ratio > 1.25 ? "warm" : (ratio < 0.85 ? "cold" : "neutral");
+                
                 sunElevation = calculateSunElevation();
                 const label = document.getElementById('gps-label');
                 if(label) label.innerText = `LUX: ${Math.round(photoLux)} | ELEV: ${Math.round(sunElevation)}° | ${colorTone.toUpperCase()}`;
@@ -376,7 +392,6 @@
     function applySim() {
         const img = document.getElementById('sim-img');
         if(!img) return;
-        // Mappatura semplificata del tono basata sui Kelvin per la preview
         img.style.filter = `brightness(${state.currentB}) sepia(${state.currentS})`;
     }
 
@@ -388,12 +403,10 @@
         else if (state.env === 'Nuvoloso') nd = "ND8";
         else if (state.env === 'Notte') nd = "NESSUNO";
 
-        // Sincronizzazione automatica simulatore con parametri calcolati
         const ndVal = nd === "ND128" ? 0.15 : (nd === "ND64" ? 0.3 : (nd === "ND32" ? 0.45 : (nd === "ND16" ? 0.6 : (nd === "ND8" ? 0.8 : 1))));
         state.currentB = ndVal;
         state.currentND_name = nd;
         
-        // Mappatura WB per simulatore
         const wbMap = {"2800K": 0.8, "3200K": 0.6, "4500K": 0.3, "5000K": 0.1, "5500K": 0, "6000K": 0.2, "6500K": 0.3, "8000K": 0.5};
         state.currentS = wbMap[state.wb] || 0;
 
