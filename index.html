@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>DJI Mini 5 Pro - Pro Setup v113 (Lux-Fix)</title>
+    <title>DJI Mini 5 Pro - Pro Setup v114 (Time-Logic)</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚁</text></svg>">
     <style>
         :root { --bg: #05070b; --card: #161b22; --accent: #deff9a; --text: #f0f6fc; --warn: #ffab70; --target: #38bdf8; --smart: #00f2ff; --action: #c084fc; }
@@ -60,7 +60,7 @@
     <div class="hero-main">
         <div id="hero-weather" class="hero-weather">☀️</div>
         <div id="hero-time" class="hero-time">00:00</div>
-        <div class="hero-v">v113 PRO-SIM</div>
+        <div class="hero-v">v114 PRO-SIM</div>
     </div>
 </div>
 
@@ -252,7 +252,6 @@
         } else { alert("Analizza prima una foto in piena luce!"); }
     }
 
-    // RIPRISTINO FORMULA ORIGINALE (MEDIA SEMPLICE) CON CORREZIONE SCALA
     function analyzePhoto(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -266,26 +265,15 @@
                 ctx.drawImage(img, 0, 0, 100, 100);
                 userImgData = e.target.result;
                 const data = ctx.getImageData(0,0,100,100).data;
-                
                 let brightnessSum = 0, rTotal = 0, bTotal = 0;
                 for(let i=0; i<data.length; i+=4) { 
-                    // Formula media semplice: (R+G+B)/3
                     brightnessSum += (data[i]+data[i+1]+data[i+2])/3; 
-                    rTotal += data[i]; 
-                    bTotal += data[i+2]; 
+                    rTotal += data[i]; bTotal += data[i+2]; 
                 }
-
-                // Calcolo della luminosità media dei pixel (da 0 a 255)
                 let avgPixelValue = brightnessSum / (canvas.width * canvas.height);
-                
-                // RIPRISTINO: Usiamo un moltiplicatore che riporti i 255 pixel max 
-                // verso la scala 200/220. Se all'alba era 420, con questo 0.85
-                // diventerà un valore molto più basso e corretto.
                 photoLux = avgPixelValue * 0.85; 
-
                 let ratio = (rTotal / bTotal);
                 colorTone = ratio > 1.25 ? "warm" : (ratio < 0.85 ? "cold" : "neutral");
-                
                 sunElevation = calculateSunElevation();
                 const label = document.getElementById('gps-label');
                 if(label) label.innerText = `LUX: ${Math.round(photoLux)} | ELEV: ${Math.round(sunElevation)}° | ${colorTone.toUpperCase()}`;
@@ -324,17 +312,40 @@
     function updateSmart() {
         document.querySelectorAll('.btn-smart').forEach(x => x.classList.remove('btn-smart'));
         document.querySelectorAll('.smart-label-container').forEach(x => x.remove());
+        
         let ref = state.soleRef;
         sunElevation = calculateSunElevation();
+        const now = new Date();
+        const hourDec = now.getHours() + now.getMinutes() / 60;
+
         if (!state.env) {
-            if (sunElevation > 10) { 
-                if (photoLux > 0 && photoLux < ref * 0.65) applySmart('btn-nuvoloso');
-                else if (sunElevation > 35) applySmart('btn-sole');
-                else applySmart('btn-taglio');
-            } 
-            else if (sunElevation > -2) applySmart('btn-alba');
-            else applySmart('btn-notte');
+            // LOGICA DI TRIANGOLAZIONE (ORA + ELEVAZIONE + LUX)
+            
+            // 1. FASCIA ALBA (5:00 - 8:45)
+            if (hourDec >= 5 && hourDec <= 8.75 && sunElevation < 15) {
+                applySmart('btn-alba');
+            }
+            // 2. FASCIA TRAMONTO (17:30 - 21:00)
+            else if (hourDec >= 17.5 && hourDec <= 21 && sunElevation < 15) {
+                applySmart('btn-alba');
+            }
+            // 3. FASCIA NOTTE
+            else if (sunElevation <= 0) {
+                applySmart('btn-notte');
+            }
+            // 4. GIORNO PIENO (Sopra i 15° di elevazione o fuori fasce critiche)
+            else {
+                if (photoLux > 0 && photoLux < ref * 0.65) {
+                    applySmart('btn-nuvoloso');
+                } else if (sunElevation > 35) {
+                    applySmart('btn-sole');
+                } else {
+                    applySmart('btn-taglio');
+                }
+            }
         }
+        
+        // Smart per Bilanciamento del Bianco
         if (state.env === 'Sole Forte' || state.env === 'Luce di Taglio') applySmart(colorTone === "warm" ? 'wb-6000-s' : 'wb-5500-s');
         if (state.env === 'Alba/Tramonto') applySmart(colorTone === "warm" ? 'wb-5500-a' : 'wb-3200-a');
         if (state.env === 'Nuvoloso') applySmart(colorTone === "cold" ? 'wb-6500-c' : 'wb-6000-c');
@@ -374,7 +385,6 @@
         if(mainPath) mainPath.innerHTML = p.join(" ➔ ") || "Scegli la condizione di luce attuale.";
     }
 
-    /* Logica Simulatore Preview */
     function simND(val, name, btn) {
         state.currentB = val;
         state.currentND_name = name;
@@ -397,9 +407,14 @@
 
     function render() {
         let nd = "ND32";
+        
+        // Logica ND dinamica basata anche sui Lux
         if (state.env === 'Sole Forte') nd = (state.goal === 'Cinema') ? "ND128" : "ND64";
         else if (state.env === 'Luce di Taglio') nd = "ND32";
-        else if (state.env === 'Alba/Tramonto') nd = "ND16";
+        else if (state.env === 'Alba/Tramonto') {
+            // Se all'alba i lux sono molto bassi (nuvoloso), suggeriamo ND8 invece di ND16
+            nd = (photoLux > 0 && photoLux < 100) ? "ND8" : "ND16";
+        }
         else if (state.env === 'Nuvoloso') nd = "ND8";
         else if (state.env === 'Notte') nd = "NESSUNO";
 
