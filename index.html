@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>DJI Mini 5 Pro - Pro Setup v117 (Astro-Logic)</title>
+    <title>DJI Mini 5 Pro - Pro Setup v118</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚁</text></svg>">
     <style>
         :root { --bg: #05070b; --card: #161b22; --accent: #deff9a; --text: #f0f6fc; --warn: #ffab70; --target: #38bdf8; --smart: #00f2ff; --action: #c084fc; }
@@ -13,6 +13,7 @@
         .hero-main { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
         .hero-weather { font-size: 5.5rem; margin-bottom: 10px; filter: drop-shadow(0 0 25px rgba(222, 255, 154, 0.4)); }
         .hero-time { font-size: 3.8rem; font-weight: 900; color: var(--text); letter-spacing: -2px; }
+        .hero-v { font-size: 0.7rem; color: var(--accent); font-weight: 800; letter-spacing: 3px; margin-top: 10px; opacity: 0.8; }
         .sensor-panel { background: rgba(0, 242, 255, 0.05); border: 1px solid var(--smart); border-radius: 20px; padding: 15px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
         .sensor-status { font-size: 0.7rem; color: var(--smart); text-transform: uppercase; font-weight: bold; display: flex; align-items: center; gap: 8px; }
         .pulse { width: 8px; height: 8px; background: var(--smart); border-radius: 50%; box-shadow: 0 0 8px var(--smart); animation: blink 2s infinite; }
@@ -40,6 +41,13 @@
         .manual-input-row { display: flex; gap: 8px; margin-top: 8px; }
         .manual-input-row input { flex: 2; background: #000; border: 1px solid var(--smart); color: #fff; padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; }
         .manual-input-row button { flex: 1; background: var(--smart); border: none; color: #000; border-radius: 8px; font-weight: 900; font-size: 0.7rem; cursor: pointer; }
+        .sim-preview-box { margin-top: 15px; background: #000; border-radius: 20px; overflow: hidden; border: 1px solid #333; position: relative; }
+        #sim-img { width: 100%; height: 180px; object-fit: cover; transition: 0.3s; filter: brightness(1) sepia(0); }
+        .sim-tools { padding: 12px; background: var(--card); }
+        .sim-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 8px; }
+        .btn-sim { padding: 10px 2px; font-size: 0.6rem; font-weight: bold; border-radius: 8px; border: 1px solid #444; background: #0b0e14; color: #fff; cursor: pointer; text-align: center; }
+        .btn-sim.active { background: var(--smart); color: #000; border-color: var(--smart); }
+        .sim-title { font-size: 0.6rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -49,6 +57,7 @@
     <div class="hero-main">
         <div id="hero-weather" class="hero-weather">☀️</div>
         <div id="hero-time" class="hero-time">00:00</div>
+        <div class="hero-v">v118 ASTRO-LOGIC</div>
     </div>
 </div>
 
@@ -164,11 +173,12 @@
 <canvas id="photo-canvas" style="display:none;"></canvas>
 
 <script>
-    let state = { soleRef: parseFloat(localStorage.getItem('soleRef')) || 195, lat: 41.11, lon: 16.87 };
+    let state = { soleRef: parseFloat(localStorage.getItem('soleRef')) || 195, lat: 41.11, lon: 16.87, currentB: 1, currentS: 0, currentND_name: "" };
     let historyStack = [{id: 'screen-env', state: {}}];
     let photoLux = 0;
     let colorTone = "neutral";
     let sunElevation = 0;
+    let userImgData = null;
 
     function getSuggestedLux() {
         const mese = new Date().getMonth();
@@ -180,7 +190,8 @@
     function updateSuggestionUI() {
         const sugg = getSuggestedLux();
         const loc = (state.lat > 41 && state.lat < 41.2) ? "Bari" : "Località";
-        document.getElementById('suggerimento-local').innerText = `Sugg. Maggio/${loc}: ${sugg} LUX`;
+        const sugEl = document.getElementById('suggerimento-local');
+        if(sugEl) sugEl.innerText = `Suggerimento: ${sugg} LUX`;
     }
 
     function manualCalibrate() {
@@ -198,7 +209,7 @@
         document.getElementById('manual-lux-input').value = sugg;
         state.soleRef = sugg;
         localStorage.setItem('soleRef', sugg);
-        alert("Applicato suggerimento per Bari: " + sugg + " LUX");
+        alert("Applicato valore consigliato: " + sugg + " LUX");
         updateSmart();
     }
 
@@ -216,15 +227,16 @@
     }
 
     function startGPS() {
-        document.getElementById('gps-label').innerText = "RICERCA SATELLITI...";
+        const label = document.getElementById('gps-label');
+        if(label) label.innerText = "RICERCA SATELLITI...";
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((pos) => {
                 state.lat = pos.coords.latitude; state.lon = pos.coords.longitude;
                 sunElevation = calculateSunElevation();
-                document.getElementById('gps-label').innerText = `GPS OK | ELEVAZIONE: ${Math.round(sunElevation)}°`;
+                if(label) label.innerText = `GPS OK | ELEVAZIONE: ${Math.round(sunElevation)}°`;
                 updateSuggestionUI();
                 updateSmart();
-            }, (err) => { document.getElementById('gps-label').innerText = "GPS DISATTIVATO"; }, { enableHighAccuracy: true });
+            }, (err) => { if(label) label.innerText = "GPS DISATTIVATO"; }, { enableHighAccuracy: true });
         }
     }
 
@@ -246,16 +258,22 @@
             img.onload = () => {
                 const canvas = document.getElementById('photo-canvas');
                 const ctx = canvas.getContext('2d');
-                canvas.width = 10; canvas.height = 10;
-                ctx.drawImage(img, 0, 0, 10, 10);
-                const data = ctx.getImageData(0,0,10,10).data;
-                let brightness = 0, rTotal = 0, bTotal = 0;
-                for(let i=0; i<data.length; i+=4) { brightness += (data[i]+data[i+1]+data[i+2])/3; rTotal += data[i]; bTotal += data[i+2]; }
-                photoLux = brightness / (data.length/4);
+                canvas.width = 100; canvas.height = 100;
+                ctx.drawImage(img, 0, 0, 100, 100);
+                userImgData = e.target.result;
+                const data = ctx.getImageData(0,0,100,100).data;
+                let brightnessSum = 0, rTotal = 0, bTotal = 0;
+                for(let i=0; i<data.length; i+=4) { 
+                    brightnessSum += (data[i]+data[i+1]+data[i+2])/3; 
+                    rTotal += data[i]; bTotal += data[i+2]; 
+                }
+                let avgPixelValue = brightnessSum / (canvas.width * canvas.height);
+                photoLux = avgPixelValue * 0.85; 
                 let ratio = (rTotal / bTotal);
                 colorTone = ratio > 1.25 ? "warm" : (ratio < 0.85 ? "cold" : "neutral");
                 sunElevation = calculateSunElevation();
-                document.getElementById('gps-label').innerText = `LUX: ${Math.round(photoLux)} | ELEV: ${Math.round(sunElevation)}° | ${colorTone.toUpperCase()}`;
+                const label = document.getElementById('gps-label');
+                if(label) label.innerText = `LUX: ${Math.round(photoLux)} | ELEV: ${Math.round(sunElevation)}° | ${colorTone.toUpperCase()}`;
                 updateSmart();
             };
             img.src = e.target.result;
@@ -265,11 +283,15 @@
 
     function updateHero() {
         const now = new Date();
-        document.getElementById('hero-date').innerText = now.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase();
-        document.getElementById('hero-time').innerText = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-        const h = now.getHours();
+        const dateEl = document.getElementById('hero-date');
+        const timeEl = document.getElementById('hero-time');
         const icon = document.getElementById('hero-weather');
-        if (h >= 20 || h < 6) icon.innerText = "🌙"; else if (h >= 6 && h < 10) icon.innerText = "🌅"; else if (h >= 18 && h < 20) icon.innerText = "🌇"; else icon.innerText = "☀️";
+        if(dateEl) dateEl.innerText = now.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase();
+        if(timeEl) timeEl.innerText = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+        const h = now.getHours();
+        if(icon) {
+            if (h >= 20 || h < 6) icon.innerText = "🌙"; else if (h >= 6 && h < 10) icon.innerText = "🌅"; else if (h >= 18 && h < 20) icon.innerText = "🌇"; else icon.innerText = "☀️";
+        }
     }
     setInterval(updateHero, 1000); updateHero();
     updateSuggestionUI();
@@ -290,50 +312,21 @@
         
         let ref = state.soleRef;
         sunElevation = calculateSunElevation();
-        const now = new Date();
-        const hour = now.getHours();
 
         if (!state.env) {
-            // LOGICA ASTRO-SMART v117
-            
-            // 1. FASCIA ALBA / TRAMONTO (-2° a 10°)
-            if (sunElevation > -2 && sunElevation <= 10) {
-                applySmart('btn-alba');
-            } 
-            
-            // 2. FASCIA LUCE DI TAGLIO (10° a 30°)
-            else if (sunElevation > 10 && sunElevation <= 30) {
-                if (photoLux > 0 && photoLux < ref * 0.65) {
-                    applySmart('btn-nuvoloso');
-                } else {
-                    applySmart('btn-taglio');
-                }
-            }
-
-            // 3. FASCIA SOLE PIENO / ZENIT (>30°)
-            else if (sunElevation > 30) {
-                if (photoLux > 0 && photoLux < ref * 0.65) {
-                    applySmart('btn-nuvoloso');
-                } else {
-                    applySmart('btn-sole');
-                }
-            }
-
-            // 4. NOTTE
+            if (sunElevation <= 0) applySmart('btn-notte');
+            else if (sunElevation > 0 && sunElevation < 15) applySmart('btn-alba');
             else {
-                applySmart('btn-notte');
+                if (photoLux > 0 && photoLux < ref * 0.65) applySmart('btn-nuvoloso');
+                else if (sunElevation > 30) applySmart('btn-sole');
+                else applySmart('btn-taglio');
             }
         }
         
         if (state.env === 'Sole Forte' || state.env === 'Luce di Taglio') applySmart(colorTone === "warm" ? 'wb-6000-s' : 'wb-5500-s');
-        if (state.env === 'Alba/Tramonto') {
-            // WB basato sull'orario (Alba vs Tramonto)
-            applySmart(hour < 12 ? 'wb-5500-a' : 'wb-3200-a');
-        }
+        if (state.env === 'Alba/Tramonto') applySmart(photoLux < 100 ? 'wb-3200-a' : 'wb-5500-a');
         if (state.env === 'Nuvoloso') applySmart(colorTone === "cold" ? 'wb-6500-c' : 'wb-6000-c');
-        if (state.env === 'Notte') {
-            if (colorTone === "warm") applySmart('wb-2800-n'); else if (colorTone === "neutral") applySmart('wb-4500-n'); else applySmart('wb-5000-n');
-        }
+        if (state.env === 'Notte') { if (colorTone === "warm") applySmart('wb-2800-n'); else if (colorTone === "neutral") applySmart('wb-4500-n'); else applySmart('wb-5000-n'); }
         if (state.goal === 'Cinema') { applySmart('fps-24'); applySmart('fps-25'); }
         applySmart('iso-manual');
     }
@@ -355,12 +348,8 @@
 
     function resetApp() { 
         let currentRef = state.soleRef; let currentLat = state.lat; let currentLon = state.lon;
-        photoLux = 0; colorTone = "neutral";
-        state = { soleRef: currentRef, lat: currentLat, lon: currentLon }; 
+        state = { soleRef: currentRef, lat: currentLat, lon: currentLon, currentB: 1, currentS: 0, currentND_name: "" }; 
         historyStack = [{id: 'screen-env', state: state}]; 
-        const input = document.getElementById('input-foto');
-        if(input) input.value = "";
-        document.getElementById('gps-label').innerText = "GPS PRONTO";
         showScreen('screen-env'); updatePath(); updateSmart(); 
     }
 
@@ -373,29 +362,75 @@
         if(mainPath) mainPath.innerHTML = p.join(" ➔ ") || "Scegli la condizione di luce attuale.";
     }
 
+    function simND(val, name, btn) {
+        state.currentB = val; state.currentND_name = name; applySim();
+        document.querySelectorAll('.nd-grp').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+    }
+    function simWB(s, name, btn) {
+        state.currentS = s; state.wb = name; applySim();
+        document.querySelectorAll('.wb-grp').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+    }
+    function applySim() {
+        const img = document.getElementById('sim-img');
+        if(!img) return;
+        img.style.filter = `brightness(${state.currentB}) sepia(${state.currentS})`;
+    }
+
     function render() {
-        let nd = "ND32"; let ref = state.soleRef;
-        let baseLux = photoLux > 0 ? photoLux : (state.env === 'Sole Forte' ? ref : ref/4);
-
-        // LOGICA FILTRI ND v117
-        if (state.env === 'Sole Forte') {
-            nd = (state.goal === 'Cinema') ? "ND128" : "ND64";
-        } else if (state.env === 'Luce di Taglio') {
-            nd = (baseLux > ref * 0.75) ? "ND64" : "ND32";
-        } else if (state.env === 'Alba/Tramonto') {
-            // Dinamico basato sulla luce reale durante l'alba
-            nd = (baseLux < ref * 0.2) ? "ND8" : "ND16";
-        } else if (state.env === 'Nuvoloso') {
-            nd = (baseLux < ref * 0.3) ? "ND8" : "ND16";
-        } else if (state.env === 'Notte') {
-            nd = "NESSUNO";
+        let nd = "ND32";
+        if (state.env === 'Sole Forte') nd = (state.goal === 'Cinema') ? "ND128" : "ND64";
+        else if (state.env === 'Luce di Taglio') nd = "ND32";
+        else if (state.env === 'Alba/Tramonto') {
+            if (photoLux > 0 && photoLux < 50) nd = "ND4";
+            else if (photoLux > 0 && photoLux < 100) nd = "ND8";
+            else nd = "ND16";
         }
+        else if (state.env === 'Nuvoloso') nd = "ND8";
+        else if (state.env === 'Notte') nd = "NESSUNO";
 
-        const luxFeedback = `<div style="font-size:0.75rem; color:var(--smart); margin-bottom:12px; font-weight:bold; letter-spacing:1px;">📊 ANALISI FISICA: ${Math.round(photoLux)} LUX | SOLE: ${Math.round(sunElevation)}°</div>`;
+        const ndVal = nd === "ND128" ? 0.15 : (nd === "ND64" ? 0.3 : (nd === "ND32" ? 0.45 : (nd === "ND16" ? 0.6 : (nd === "ND8" ? 0.8 : (nd === "ND4" ? 0.9 : 1)))));
+        state.currentB = ndVal;
+        state.currentND_name = nd;
+        
+        const wbMap = {"2800K": 0.8, "3200K": 0.6, "4500K": 0.3, "5000K": 0.1, "5500K": 0, "6000K": 0.2, "6500K": 0.3, "8000K": 0.5};
+        state.currentS = wbMap[state.wb] || 0;
+
         const ott = (state.goal === 'Cinema') ? `1/${state.fps * 2}s` : `FLUIDO (>1/${state.fps * 4}s)`;
+        const placeholderImg = "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80";
 
         document.getElementById('result').innerHTML = `
-            ${luxFeedback}
+            <div class="sim-preview-box">
+                <img id="sim-img" src="${userImgData || placeholderImg}">
+                <div class="sim-tools">
+                    <div class="sim-title">Test Filtro ND</div>
+                    <div class="sim-row">
+                        <button class="btn-sim nd-grp ${nd==='NESSUNO'?'active':''}" onclick="simND(1, 'NESSUNO', this)">OFF</button>
+                        <button class="btn-sim nd-grp ${nd==='ND4'?'active':''}" onclick="simND(0.9, 'ND4', this)">ND4</button>
+                        <button class="btn-sim nd-grp ${nd==='ND8'?'active':''}" onclick="simND(0.8, 'ND8', this)">ND8</button>
+                        <button class="btn-sim nd-grp ${nd==='ND16'?'active':''}" onclick="simND(0.6, 'ND16', this)">ND16</button>
+                    </div>
+                    <div class="sim-row">
+                        <button class="btn-sim nd-grp ${nd==='ND32'?'active':''}" onclick="simND(0.45, 'ND32', this)">ND32</button>
+                        <button class="btn-sim nd-grp ${nd==='ND64'?'active':''}" onclick="simND(0.3, 'ND64', this)">ND64</button>
+                        <button class="btn-sim nd-grp ${nd==='ND128'?'active':''}" onclick="simND(0.15, 'ND128', this)">ND128</button>
+                    </div>
+                    
+                    <div class="sim-title">Test Bilanciamento (K)</div>
+                    <div class="sim-row">
+                        <button class="btn-sim wb-grp ${state.wb==='2800K'?'active':''}" onclick="simWB(0.8, '2800K', this)">2800K</button>
+                        <button class="btn-sim wb-grp ${state.wb==='3200K'?'active':''}" onclick="simWB(0.6, '3200K', this)">3200K</button>
+                        <button class="btn-sim wb-grp ${state.wb==='4500K'?'active':''}" onclick="simWB(0.3, '4500K', this)">4500K</button>
+                        <button class="btn-sim wb-grp ${state.wb==='5000K'?'active':''}" onclick="simWB(0.1, '5000K', this)">5000K</button>
+                    </div>
+                    <div class="sim-row">
+                        <button class="btn-sim wb-grp ${state.wb==='5500K'?'active':''}" onclick="simWB(0, '5500K', this)">5500K</button>
+                        <button class="btn-sim wb-grp ${state.wb==='6000K'?'active':''}" onclick="simWB(0.2, '6000K', this)">6000K</button>
+                        <button class="btn-sim wb-grp ${state.wb==='6500K'?'active':''}" onclick="simWB(0.3, '6500K', this)">6500K</button>
+                        <button class="btn-sim wb-grp ${state.wb==='8000K'?'active':''}" onclick="simWB(0.5, '8000K', this)">8000K</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="card"><span class="card-title">Hardware</span>💎 FILTRO: <span class="val">${nd}</span></div>
             <div class="card" style="border-left-color: var(--action)">
                 <span class="card-title">Camera Setting</span>
@@ -412,14 +447,15 @@
                         • <b>MM<-0.3(sottoesposizione)</b>: Monta ND più basso o aumenta ISO.<br>
                         • <span style="color:#52ffad;">Target: MM tra -0.3 e 0.0</span>
                     </div>` : 
-                    `<div class="instruction-box"><b>ISO AUTO</b> (Max 200) | <b>EV: -0.3</b></div>`}
+                    `<div class=\"instruction-box\"><b>ISO AUTO</b> (Max 200) | <b>EV: -0.3</b></div>`}
             </div>
             <div class="card" style="border-left-color: var(--target); background: rgba(56, 189, 248, 0.05);">
                 <span class="card-title">Fondamentale</span>
                 <b>🔒 BLOCCO AE:</b>
-                <div class="instruction-box">Punta l'area più chiara della scena e blocca l'esposizione (lucchetto) per evitare sfarfallii. In ogni modo controlla l'istogramma che sia tutto concentrato nella parte centrale prima del blocco</div>
+                <div class="instruction-box">Punta l'area più chiara della scena e blocca l'esposizione (lucchetto) per evitare sfarfallii. Controlla che l'istogramma sia ben bilanciato prima del blocco.</div>
             </div>
         `;
+        applySim();
     }
 </script>
 </body>
